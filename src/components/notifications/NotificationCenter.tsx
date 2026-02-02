@@ -86,11 +86,11 @@ const severityColors = {
 
 // Route mapping for notification types
 const notificationRoutes: Record<Notification["type"], string> = {
-  sla_breach: "/analytics",
-  sentiment_dip: "/sentiment-analysis",
+  sla_breach: "/security",
+  sentiment_dip: "/sentiment",
   fraud_alert: "/security",
   new_client: "/clients",
-  system: "/platform-config",
+  system: "/config",
 };
 
 export function NotificationCenter() {
