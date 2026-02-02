@@ -19,6 +19,7 @@ import {
   MessageCircle,
   GitBranch,
   BarChart2,
+  RefreshCw,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { cn } from "@/lib/utils";
@@ -47,6 +48,7 @@ const mainNavItems = [
   { title: "Knowledge Base", url: "/knowledge", icon: Brain },
   { title: "Widget Customizer", url: "/widget", icon: MessageCircle },
   { title: "Analytics", url: "/analytics", icon: BarChart3 },
+  { title: "AI Engine Fallback", url: "/ai-fallback", icon: RefreshCw },
   { title: "Billing", url: "/billing", icon: CreditCard },
   { title: "Integrations", url: "/integrations", icon: Plug },
   { title: "Platform Config", url: "/config", icon: Sliders },
