@@ -36,7 +36,6 @@ import {
 } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { NotificationCenter } from "@/components/notifications/NotificationCenter";
 
 const mainNavItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
@@ -91,15 +90,12 @@ export function AppSidebar() {
             )}
           </div>
           {!collapsed && (
-            <div className="flex items-center gap-1">
-              <NotificationCenter />
-              <button
-                onClick={toggleSidebar}
-                className="flex h-7 w-7 items-center justify-center rounded-md hover:bg-accent transition-colors"
-              >
-                <ChevronLeft className="h-4 w-4 text-muted-foreground" />
-              </button>
-            </div>
+            <button
+              onClick={toggleSidebar}
+              className="flex h-7 w-7 items-center justify-center rounded-md hover:bg-accent transition-colors"
+            >
+              <ChevronLeft className="h-4 w-4 text-muted-foreground" />
+            </button>
           )}
         </div>
         {collapsed && (
