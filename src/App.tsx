@@ -14,6 +14,11 @@ import HelpCenter from "./pages/HelpCenter";
 import Billing from "./pages/Billing";
 import Integrations from "./pages/Integrations";
 import LiveOperations from "./pages/LiveOperations";
+import KnowledgeBase from "./pages/KnowledgeBase";
+import OutboundCalling from "./pages/OutboundCalling";
+import WidgetCustomizer from "./pages/WidgetCustomizer";
+import FlowBuilder from "./pages/FlowBuilder";
+import SentimentAnalysis from "./pages/SentimentAnalysis";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +41,11 @@ const App = () => (
           <Route path="/billing" element={<Billing />} />
           <Route path="/integrations" element={<Integrations />} />
           <Route path="/live" element={<LiveOperations />} />
+          <Route path="/knowledge" element={<KnowledgeBase />} />
+          <Route path="/outbound" element={<OutboundCalling />} />
+          <Route path="/widget" element={<WidgetCustomizer />} />
+          <Route path="/flow-builder" element={<FlowBuilder />} />
+          <Route path="/sentiment" element={<SentimentAnalysis />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
