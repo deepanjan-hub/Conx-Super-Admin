@@ -19,6 +19,7 @@ import OutboundCalling from "./pages/OutboundCalling";
 import WidgetCustomizer from "./pages/WidgetCustomizer";
 import FlowBuilder from "./pages/FlowBuilder";
 import SentimentAnalysis from "./pages/SentimentAnalysis";
+import AIEngineFallback from "./pages/AIEngineFallback";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ const App = () => (
           <Route path="/clients" element={<Clients />} />
           <Route path="/clients/:id" element={<ClientDetail />} />
           <Route path="/analytics" element={<Analytics />} />
+          <Route path="/ai-fallback" element={<AIEngineFallback />} />
           <Route path="/config" element={<PlatformConfig />} />
           <Route path="/security" element={<Security />} />
           <Route path="/settings" element={<Settings />} />
