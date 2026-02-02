@@ -78,6 +78,8 @@ import {
   TrendingDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useClientStore } from "@/stores/clientStore";
+import { toast } from "sonner";
 
 // Mock client data
 const clientData = {
@@ -162,7 +164,64 @@ const ClientDetail = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
-  const client = clientData; // In real app, fetch by id
+  const storeClient = useClientStore((state) => state.getClientById(id || ""));
+  const updateClient = useClientStore((state) => state.updateClient);
+  const deleteClient = useClientStore((state) => state.deleteClient);
+
+  // Merge store data with additional mock fields for display
+  const client = storeClient ? {
+    ...storeClient,
+    phone: "+1 (555) 123-4567",
+    website: `https://${storeClient.name.toLowerCase().replace(/\s+/g, '')}.com`,
+    industry: "Technology",
+    agents: 12,
+    billingEmail: `billing@${storeClient.email.split('@')[1]}`,
+    address: "123 Tech Avenue, San Francisco, CA 94102",
+    timezone: "America/Los_Angeles",
+    languages: ["English", "Spanish"],
+    channels: {
+      voice: true,
+      chat: true,
+      email: true,
+    },
+    features: {
+      sentimentAnalysis: true,
+      fraudDetection: true,
+      voiceBiometrics: false,
+      multiLanguage: true,
+    },
+  } : null;
+
+  const handleSuspendToggle = () => {
+    if (!client || !id) return;
+    const newStatus = client.status === "Suspended" ? "Active" : "Suspended";
+    updateClient(id, { status: newStatus });
+    setIsSuspendDialogOpen(false);
+    toast.success(
+      newStatus === "Suspended"
+        ? `${client.name} has been suspended`
+        : `${client.name} has been reactivated`
+    );
+  };
+
+  const handleDelete = () => {
+    if (!id) return;
+    deleteClient(id);
+    setIsDeleteDialogOpen(false);
+    toast.success("Client deleted successfully");
+    navigate("/clients");
+  };
+
+  if (!client) {
+    return (
+      <DashboardLayout title="Client Not Found" subtitle="">
+        <div className="flex flex-col items-center justify-center py-12">
+          <p className="text-muted-foreground mb-4">The requested client was not found.</p>
+          <Button onClick={() => navigate("/clients")}>Back to Clients</Button>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout
@@ -216,7 +275,17 @@ const ClientDetail = () => {
             </Button>
           </div>
           <div className="flex items-center gap-2">
-            {client.status === "Active" ? (
+            {client.status === "Suspended" ? (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="gap-2 text-success border-success/30 hover:bg-success/10"
+                onClick={handleSuspendToggle}
+              >
+                <PlayCircle className="h-4 w-4" />
+                Reactivate
+              </Button>
+            ) : (
               <Dialog open={isSuspendDialogOpen} onOpenChange={setIsSuspendDialogOpen}>
                 <DialogTrigger asChild>
                   <Button variant="outline" size="sm" className="gap-2 text-warning border-warning/30 hover:bg-warning/10">
@@ -241,17 +310,12 @@ const ClientDetail = () => {
                     <Button variant="outline" onClick={() => setIsSuspendDialogOpen(false)}>
                       Cancel
                     </Button>
-                    <Button variant="destructive" onClick={() => setIsSuspendDialogOpen(false)}>
+                    <Button variant="destructive" onClick={handleSuspendToggle}>
                       Suspend Account
                     </Button>
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
-            ) : (
-              <Button variant="outline" size="sm" className="gap-2 text-success border-success/30 hover:bg-success/10">
-                <PlayCircle className="h-4 w-4" />
-                Reactivate
-              </Button>
             )}
             <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
               <DialogTrigger asChild>
@@ -286,7 +350,7 @@ const ClientDetail = () => {
                   <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
                     Cancel
                   </Button>
-                  <Button variant="destructive" onClick={() => setIsDeleteDialogOpen(false)}>
+                  <Button variant="destructive" onClick={handleDelete}>
                     Delete Permanently
                   </Button>
                 </DialogFooter>
