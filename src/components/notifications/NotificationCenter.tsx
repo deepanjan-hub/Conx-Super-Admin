@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Bell, AlertTriangle, TrendingDown, Shield, UserPlus, X, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,7 +12,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-
 interface Notification {
   id: string;
   type: "sla_breach" | "sentiment_dip" | "fraud_alert" | "new_client" | "system";
@@ -84,7 +84,17 @@ const severityColors = {
   critical: "bg-destructive/10 text-destructive",
 };
 
+// Route mapping for notification types
+const notificationRoutes: Record<Notification["type"], string> = {
+  sla_breach: "/analytics",
+  sentiment_dip: "/sentiment-analysis",
+  fraud_alert: "/security",
+  new_client: "/clients",
+  system: "/platform-config",
+};
+
 export function NotificationCenter() {
+  const navigate = useNavigate();
   const [notifications, setNotifications] = useState<Notification[]>(mockNotifications);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -161,6 +171,14 @@ export function NotificationCenter() {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
   };
 
+  const handleNotificationClick = (notification: Notification) => {
+    markAsRead(notification.id);
+    setIsOpen(false);
+    const route = notificationRoutes[notification.type];
+    navigate(route);
+    toast.info(`Navigating to ${notification.title.replace(" Alert", "").replace(" Detected", "")}`);
+  };
+
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
@@ -207,7 +225,7 @@ export function NotificationCenter() {
                       "p-4 hover:bg-secondary/50 transition-colors cursor-pointer relative group",
                       !notification.read && "bg-primary/5"
                     )}
-                    onClick={() => markAsRead(notification.id)}
+                    onClick={() => handleNotificationClick(notification)}
                   >
                     <div className="flex gap-3">
                       <div
