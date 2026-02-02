@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
-  title?: string;
+  title?: string | React.ReactNode;
   subtitle?: string;
 }
 

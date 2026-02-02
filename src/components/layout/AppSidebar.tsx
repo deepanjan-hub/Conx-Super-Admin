@@ -12,6 +12,9 @@ import {
   Zap,
   LogOut,
   HelpCircle,
+  CreditCard,
+  Plug,
+  Activity,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { cn } from "@/lib/utils";
@@ -33,7 +36,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 const mainNavItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
   { title: "Clients", url: "/clients", icon: Users },
+  { title: "Live Operations", url: "/live", icon: Activity },
   { title: "Analytics", url: "/analytics", icon: BarChart3 },
+  { title: "Billing", url: "/billing", icon: CreditCard },
+  { title: "Integrations", url: "/integrations", icon: Plug },
   { title: "Platform Config", url: "/config", icon: Sliders },
   { title: "Security", url: "/security", icon: Shield },
 ];
