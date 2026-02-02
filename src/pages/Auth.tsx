@@ -29,7 +29,7 @@ export default function Auth() {
   const { user, signIn, signUp, loading } = useAuth();
   const navigate = useNavigate();
   
-  const [activeTab, setActiveTab] = useState('login');
+  const [activeTab, setActiveTab] = useState('signup'); // Default to signup for first-time users
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   
@@ -38,11 +38,11 @@ export default function Auth() {
   const [loginPassword, setLoginPassword] = useState('');
   const [loginErrors, setLoginErrors] = useState<{ email?: string; password?: string }>({});
   
-  // Signup form state
-  const [signupEmail, setSignupEmail] = useState('');
-  const [signupPassword, setSignupPassword] = useState('');
-  const [signupConfirmPassword, setSignupConfirmPassword] = useState('');
-  const [signupFullName, setSignupFullName] = useState('');
+  // Signup form state - pre-filled with admin credentials
+  const [signupEmail, setSignupEmail] = useState('superadmin@voiceai.com');
+  const [signupPassword, setSignupPassword] = useState('VoiceAI@2024!');
+  const [signupConfirmPassword, setSignupConfirmPassword] = useState('VoiceAI@2024!');
+  const [signupFullName, setSignupFullName] = useState('Super Admin');
   const [signupErrors, setSignupErrors] = useState<{ email?: string; password?: string; confirmPassword?: string; fullName?: string }>({});
 
   // Redirect if already authenticated
@@ -116,12 +116,15 @@ export default function Auth() {
     if (error) {
       if (error.message.includes('User already registered')) {
         toast.error('This email is already registered. Please sign in instead.');
+        setActiveTab('login');
+        setLoginEmail(signupEmail);
+        setLoginPassword(signupPassword);
       } else {
         toast.error(error.message);
       }
     } else {
-      toast.success('Account created! Please check your email to verify your account.');
-      setActiveTab('login');
+      toast.success('Account created successfully! You are now logged in.');
+      navigate('/');
     }
     
     setIsSubmitting(false);
@@ -304,10 +307,10 @@ export default function Auth() {
         </CardContent>
         
         <CardFooter className="flex flex-col space-y-4 text-center text-sm text-muted-foreground">
-          <div className="p-3 bg-secondary/50 rounded-lg w-full">
-            <p className="font-medium text-foreground mb-1">Admin Credentials</p>
-            <p>Email: <code className="text-primary">superadmin@voiceai.com</code></p>
-            <p>Password: <code className="text-primary">VoiceAI@2024!</code></p>
+          <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg w-full">
+            <p className="font-medium text-primary mb-1">⚡ First Time Setup</p>
+            <p className="text-foreground text-xs">Click <strong>"Create Account"</strong> to register the admin account.</p>
+            <p className="text-xs mt-1">The form is pre-filled with admin credentials.</p>
           </div>
           <p className="text-xs">
             By signing in, you agree to our Terms of Service and Privacy Policy.
