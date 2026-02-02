@@ -20,11 +20,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Search, Plus, MoreHorizontal, Filter, Download, Eye, Edit, CreditCard, BarChart3, PauseCircle } from "lucide-react";
+import { Search, Plus, MoreHorizontal, Filter, Download, Eye, Edit, CreditCard, BarChart3, PauseCircle, PlayCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AddClientDialog } from "@/components/clients/AddClientDialog";
 import { ExportDialog } from "@/components/shared/ExportDialog";
 import { useClientStore } from "@/stores/clientStore";
+import { toast } from "sonner";
 
 const planColors = {
   Starter: "bg-secondary text-secondary-foreground",
@@ -47,6 +48,18 @@ const Clients = () => {
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   
   const clients = useClientStore((state) => state.clients);
+  const updateClient = useClientStore((state) => state.updateClient);
+
+  const handleToggleSuspend = (e: React.MouseEvent, client: typeof clients[0]) => {
+    e.stopPropagation();
+    const newStatus = client.status === "Suspended" ? "Active" : "Suspended";
+    updateClient(client.id, { status: newStatus });
+    toast.success(
+      newStatus === "Suspended" 
+        ? `${client.name} has been suspended` 
+        : `${client.name} has been reactivated`
+    );
+  };
 
   const filteredClients = clients.filter(
     (client) =>
@@ -177,9 +190,21 @@ const Clients = () => {
                           View Analytics
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-destructive">
-                          <PauseCircle className="h-4 w-4 mr-2" />
-                          Suspend Account
+                        <DropdownMenuItem 
+                          className={client.status === "Suspended" ? "text-success" : "text-destructive"}
+                          onClick={(e) => handleToggleSuspend(e, client)}
+                        >
+                          {client.status === "Suspended" ? (
+                            <>
+                              <PlayCircle className="h-4 w-4 mr-2" />
+                              Unsuspend Account
+                            </>
+                          ) : (
+                            <>
+                              <PauseCircle className="h-4 w-4 mr-2" />
+                              Suspend Account
+                            </>
+                          )}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
