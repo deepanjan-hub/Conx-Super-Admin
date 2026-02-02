@@ -3,6 +3,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
 import Clients from "./pages/Clients";
 import ClientDetail from "./pages/ClientDetail";
@@ -20,6 +22,7 @@ import WidgetCustomizer from "./pages/WidgetCustomizer";
 import FlowBuilder from "./pages/FlowBuilder";
 import SentimentAnalysis from "./pages/SentimentAnalysis";
 import AIEngineFallback from "./pages/AIEngineFallback";
+import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,27 +33,30 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/clients" element={<Clients />} />
-          <Route path="/clients/:id" element={<ClientDetail />} />
-          <Route path="/analytics" element={<Analytics />} />
-          <Route path="/ai-fallback" element={<AIEngineFallback />} />
-          <Route path="/config" element={<PlatformConfig />} />
-          <Route path="/security" element={<Security />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/help" element={<HelpCenter />} />
-          <Route path="/billing" element={<Billing />} />
-          <Route path="/integrations" element={<Integrations />} />
-          <Route path="/live" element={<LiveOperations />} />
-          <Route path="/knowledge" element={<KnowledgeBase />} />
-          <Route path="/outbound" element={<OutboundCalling />} />
-          <Route path="/widget" element={<WidgetCustomizer />} />
-          <Route path="/flow-builder" element={<FlowBuilder />} />
-          <Route path="/sentiment" element={<SentimentAnalysis />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AuthProvider>
+          <Routes>
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
+            <Route path="/clients/:id" element={<ProtectedRoute><ClientDetail /></ProtectedRoute>} />
+            <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
+            <Route path="/ai-fallback" element={<ProtectedRoute><AIEngineFallback /></ProtectedRoute>} />
+            <Route path="/config" element={<ProtectedRoute><PlatformConfig /></ProtectedRoute>} />
+            <Route path="/security" element={<ProtectedRoute><Security /></ProtectedRoute>} />
+            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+            <Route path="/help" element={<ProtectedRoute><HelpCenter /></ProtectedRoute>} />
+            <Route path="/billing" element={<ProtectedRoute><Billing /></ProtectedRoute>} />
+            <Route path="/integrations" element={<ProtectedRoute><Integrations /></ProtectedRoute>} />
+            <Route path="/live" element={<ProtectedRoute><LiveOperations /></ProtectedRoute>} />
+            <Route path="/knowledge" element={<ProtectedRoute><KnowledgeBase /></ProtectedRoute>} />
+            <Route path="/outbound" element={<ProtectedRoute><OutboundCalling /></ProtectedRoute>} />
+            <Route path="/widget" element={<ProtectedRoute><WidgetCustomizer /></ProtectedRoute>} />
+            <Route path="/flow-builder" element={<ProtectedRoute><FlowBuilder /></ProtectedRoute>} />
+            <Route path="/sentiment" element={<ProtectedRoute><SentimentAnalysis /></ProtectedRoute>} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

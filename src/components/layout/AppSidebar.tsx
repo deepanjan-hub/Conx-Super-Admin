@@ -1,4 +1,4 @@
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   Users,
@@ -37,6 +37,8 @@ import {
 } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 const mainNavItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
@@ -59,15 +61,52 @@ const bottomNavItems = [
   { title: "Help Center", url: "/help", icon: HelpCircle },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
+
 export function AppSidebar() {
   const { state, toggleSidebar } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
+  const navigate = useNavigate();
   const currentPath = location.pathname;
+  const { user, signOut, userRole } = useAuth();
 
   const isActive = (path: string) => {
     if (path === "/") return currentPath === "/";
     return currentPath.startsWith(path);
+  };
+
+  const handleLogout = async () => {
+    await signOut();
+    toast.success('Signed out successfully');
+    navigate('/auth');
+  };
+
+  // Get user initials for avatar
+  const getUserInitials = () => {
+    if (user?.user_metadata?.full_name) {
+      const names = user.user_metadata.full_name.split(' ');
+      return names.map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
+    }
+    if (user?.email) {
+      return user.email.slice(0, 2).toUpperCase();
+    }
+    return 'SA';
+  };
+
+  // Get display name
+  const getDisplayName = () => {
+    if (user?.user_metadata?.full_name) {
+      return user.user_metadata.full_name;
+    }
+    return 'Super Admin';
+  };
+
+  // Get role display
+  const getRoleDisplay = () => {
+    if (userRole) {
+      return userRole.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+    }
+    return 'User';
   };
 
   return (
@@ -87,7 +126,7 @@ export function AppSidebar() {
             {!collapsed && (
               <div className="flex flex-col">
                 <span className="text-sm font-semibold text-foreground">ConX-AI</span>
-                <span className="text-xs text-muted-foreground">Super Admin</span>
+                <span className="text-xs text-muted-foreground">{getRoleDisplay()}</span>
               </div>
             )}
           </div>
@@ -174,21 +213,36 @@ export function AppSidebar() {
 
         <div className={cn("flex items-center gap-3 px-3 py-2", collapsed && "justify-center")}>
           <Avatar className="h-8 w-8">
-            <AvatarImage src="" alt="Admin" />
-            <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">SA</AvatarFallback>
+            <AvatarImage src="" alt={getDisplayName()} />
+            <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
+              {getUserInitials()}
+            </AvatarFallback>
           </Avatar>
           {!collapsed && (
-            <div className="flex flex-1 flex-col">
-              <span className="text-sm font-medium text-foreground">Super Admin</span>
-              <span className="text-xs text-muted-foreground">admin@qubelabs.ai</span>
+            <div className="flex flex-1 flex-col overflow-hidden">
+              <span className="text-sm font-medium text-foreground truncate">{getDisplayName()}</span>
+              <span className="text-xs text-muted-foreground truncate">{user?.email}</span>
             </div>
           )}
           {!collapsed && (
-            <button className="flex h-7 w-7 items-center justify-center rounded-md hover:bg-accent transition-colors">
-              <LogOut className="h-4 w-4 text-muted-foreground" />
+            <button 
+              onClick={handleLogout}
+              className="flex h-7 w-7 items-center justify-center rounded-md hover:bg-destructive/10 hover:text-destructive transition-colors"
+              title="Sign out"
+            >
+              <LogOut className="h-4 w-4" />
             </button>
           )}
         </div>
+        {collapsed && (
+          <button 
+            onClick={handleLogout}
+            className="mt-2 flex h-7 w-7 items-center justify-center rounded-md hover:bg-destructive/10 hover:text-destructive transition-colors mx-auto"
+            title="Sign out"
+          >
+            <LogOut className="h-4 w-4" />
+          </button>
+        )}
       </SidebarFooter>
     </Sidebar>
   );
