@@ -151,7 +151,7 @@ export const AddClientDialog = ({ open, onOpenChange }: AddClientDialogProps) =>
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[700px]">
+      <DialogContent className="sm:max-w-[700px] max-h-[85vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>Add New Client</DialogTitle>
           <DialogDescription>
@@ -199,6 +199,8 @@ export const AddClientDialog = ({ open, onOpenChange }: AddClientDialogProps) =>
 
         <Separator />
 
+        {/* Body (scrollable) */}
+        <div className="flex-1 overflow-y-auto">
         {/* Step 1: Company Details */}
         {currentStep === 1 && (
           <div className="space-y-4 py-4">
@@ -478,6 +480,8 @@ export const AddClientDialog = ({ open, onOpenChange }: AddClientDialogProps) =>
             </div>
           </div>
         )}
+
+        </div>
 
         <DialogFooter>
           {currentStep > 1 && (

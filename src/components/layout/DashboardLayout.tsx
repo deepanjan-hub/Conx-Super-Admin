@@ -1,9 +1,8 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
-import { Bell, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { NotificationCenter } from "@/components/notifications/NotificationCenter";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -39,12 +38,7 @@ export function DashboardLayout({ children, title, subtitle }: DashboardLayoutPr
                 />
               </div>
               
-              <Button variant="ghost" size="icon" className="relative">
-                <Bell className="h-5 w-5 text-muted-foreground" />
-                <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-[10px]">
-                  3
-                </Badge>
-              </Button>
+              <NotificationCenter />
             </div>
           </header>
 
