@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -15,6 +14,11 @@ import {
   CreditCard,
   Plug,
   Activity,
+  Phone,
+  Brain,
+  MessageCircle,
+  GitBranch,
+  BarChart2,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { cn } from "@/lib/utils";
@@ -32,11 +36,17 @@ import {
 } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { NotificationCenter } from "@/components/notifications/NotificationCenter";
 
 const mainNavItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
   { title: "Clients", url: "/clients", icon: Users },
   { title: "Live Operations", url: "/live", icon: Activity },
+  { title: "Outbound Calling", url: "/outbound", icon: Phone },
+  { title: "Sentiment Analysis", url: "/sentiment", icon: BarChart2 },
+  { title: "Flow Builder", url: "/flow-builder", icon: GitBranch },
+  { title: "Knowledge Base", url: "/knowledge", icon: Brain },
+  { title: "Widget Customizer", url: "/widget", icon: MessageCircle },
   { title: "Analytics", url: "/analytics", icon: BarChart3 },
   { title: "Billing", url: "/billing", icon: CreditCard },
   { title: "Integrations", url: "/integrations", icon: Plug },
@@ -48,7 +58,6 @@ const bottomNavItems = [
   { title: "Help Center", url: "/help", icon: HelpCircle },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
-
 export function AppSidebar() {
   const { state, toggleSidebar } = useSidebar();
   const collapsed = state === "collapsed";
@@ -82,12 +91,15 @@ export function AppSidebar() {
             )}
           </div>
           {!collapsed && (
-            <button
-              onClick={toggleSidebar}
-              className="flex h-7 w-7 items-center justify-center rounded-md hover:bg-accent transition-colors"
-            >
-              <ChevronLeft className="h-4 w-4 text-muted-foreground" />
-            </button>
+            <div className="flex items-center gap-1">
+              <NotificationCenter />
+              <button
+                onClick={toggleSidebar}
+                className="flex h-7 w-7 items-center justify-center rounded-md hover:bg-accent transition-colors"
+              >
+                <ChevronLeft className="h-4 w-4 text-muted-foreground" />
+              </button>
+            </div>
           )}
         </div>
         {collapsed && (
@@ -99,7 +111,6 @@ export function AppSidebar() {
           </button>
         )}
       </SidebarHeader>
-
       <Separator className="mx-4 w-auto" />
 
       <SidebarContent className="px-3 py-4">

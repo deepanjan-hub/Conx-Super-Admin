@@ -23,16 +23,15 @@ import {
 } from "@/components/ui/select";
 import {
   Building2,
-  Mail,
-  Phone,
-  Globe,
   CreditCard,
   Settings,
   CheckCircle,
   ArrowRight,
   ArrowLeft,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface AddClientDialogProps {
   open: boolean;
@@ -48,6 +47,7 @@ const steps = [
 
 export const AddClientDialog = ({ open, onOpenChange }: AddClientDialogProps) => {
   const [currentStep, setCurrentStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     companyName: "",
     adminEmail: "",
@@ -66,9 +66,41 @@ export const AddClientDialog = ({ open, onOpenChange }: AddClientDialogProps) =>
     languages: ["en"],
   });
 
+  const validateStep = (step: number): boolean => {
+    switch (step) {
+      case 1:
+        if (!formData.companyName.trim()) {
+          toast.error("Company name is required");
+          return false;
+        }
+        if (!formData.adminEmail.trim() || !/\S+@\S+\.\S+/.test(formData.adminEmail)) {
+          toast.error("Valid admin email is required");
+          return false;
+        }
+        return true;
+      case 2:
+        if (!formData.plan) {
+          toast.error("Please select a subscription plan");
+          return false;
+        }
+        return true;
+      case 3:
+        if (!formData.voiceEnabled && !formData.chatEnabled && !formData.emailEnabled) {
+          toast.error("At least one communication channel must be enabled");
+          return false;
+        }
+        return true;
+      default:
+        return true;
+    }
+  };
+
   const handleNext = () => {
-    if (currentStep < 4) {
-      setCurrentStep(currentStep + 1);
+    if (validateStep(currentStep)) {
+      if (currentStep < 4) {
+        setCurrentStep(currentStep + 1);
+        toast.success(`Step ${currentStep} completed`);
+      }
     }
   };
 
@@ -78,15 +110,47 @@ export const AddClientDialog = ({ open, onOpenChange }: AddClientDialogProps) =>
     }
   };
 
-  const handleSubmit = () => {
-    // Handle form submission
-    console.log("Creating client:", formData);
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    toast.success(`${formData.companyName} has been created successfully!`, {
+      description: `Invitation email sent to ${formData.adminEmail}`,
+    });
+    
+    setIsSubmitting(false);
+    onOpenChange(false);
+    
+    // Reset form
+    setCurrentStep(1);
+    setFormData({
+      companyName: "",
+      adminEmail: "",
+      phone: "",
+      website: "",
+      industry: "",
+      address: "",
+      billingEmail: "",
+      plan: "professional",
+      voiceEnabled: true,
+      chatEnabled: true,
+      emailEnabled: true,
+      sentimentAnalysis: true,
+      fraudDetection: false,
+      multiLanguage: true,
+      languages: ["en"],
+    });
+  };
+
+  const handleClose = () => {
     onOpenChange(false);
     setCurrentStep(1);
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[700px]">
         <DialogHeader>
           <DialogTitle>Add New Client</DialogTitle>
@@ -417,12 +481,12 @@ export const AddClientDialog = ({ open, onOpenChange }: AddClientDialogProps) =>
 
         <DialogFooter>
           {currentStep > 1 && (
-            <Button variant="outline" onClick={handleBack} className="gap-2 mr-auto">
+            <Button variant="outline" onClick={handleBack} className="gap-2 mr-auto" disabled={isSubmitting}>
               <ArrowLeft className="h-4 w-4" />
               Back
             </Button>
           )}
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={handleClose} disabled={isSubmitting}>
             Cancel
           </Button>
           {currentStep < 4 ? (
@@ -431,7 +495,16 @@ export const AddClientDialog = ({ open, onOpenChange }: AddClientDialogProps) =>
               <ArrowRight className="h-4 w-4" />
             </Button>
           ) : (
-            <Button onClick={handleSubmit}>Create Client</Button>
+            <Button onClick={handleSubmit} disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                "Create Client"
+              )}
+            </Button>
           )}
         </DialogFooter>
       </DialogContent>
