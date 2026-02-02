@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import {
   Table,
@@ -19,25 +20,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Search, Plus, MoreHorizontal, Filter, Download } from "lucide-react";
+import { Search, Plus, MoreHorizontal, Filter, Download, Eye, Edit, CreditCard, BarChart3, PauseCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { AddClientDialog } from "@/components/clients/AddClientDialog";
+import { ExportDialog } from "@/components/shared/ExportDialog";
 
 interface Client {
   id: string;
@@ -154,15 +140,23 @@ const statusColors = {
   Pending: "bg-warning/10 text-warning",
 };
 
+const exportColumns = ["Name", "Email", "Plan", "Status", "Users", "Conversations", "MRR", "Created"];
+
 const Clients = () => {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
 
   const filteredClients = clients.filter(
     (client) =>
       client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       client.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleViewDetails = (clientId: string) => {
+    navigate(`/clients/${clientId}`);
+  };
 
   return (
     <DashboardLayout title="Clients" subtitle="Manage enterprise client accounts">
@@ -185,55 +179,14 @@ const Clients = () => {
             </Button>
           </div>
           <div className="flex items-center gap-3">
-            <Button variant="outline" className="gap-2">
+            <Button variant="outline" className="gap-2" onClick={() => setIsExportDialogOpen(true)}>
               <Download className="h-4 w-4" />
               Export
             </Button>
-            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-              <DialogTrigger asChild>
-                <Button className="gap-2">
-                  <Plus className="h-4 w-4" />
-                  Add Client
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[500px]">
-                <DialogHeader>
-                  <DialogTitle>Add New Client</DialogTitle>
-                  <DialogDescription>
-                    Create a new enterprise client account. They'll receive an invitation email.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="company">Company Name</Label>
-                    <Input id="company" placeholder="Enter company name" />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="email">Admin Email</Label>
-                    <Input id="email" type="email" placeholder="admin@company.com" />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="plan">Subscription Plan</Label>
-                    <Select>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a plan" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="starter">Starter</SelectItem>
-                        <SelectItem value="professional">Professional</SelectItem>
-                        <SelectItem value="enterprise">Enterprise</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={() => setIsAddDialogOpen(false)}>Create Client</Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+            <Button className="gap-2" onClick={() => setIsAddDialogOpen(true)}>
+              <Plus className="h-4 w-4" />
+              Add Client
+            </Button>
           </div>
         </div>
 
@@ -254,7 +207,11 @@ const Clients = () => {
             </TableHeader>
             <TableBody>
               {filteredClients.map((client) => (
-                <TableRow key={client.id} className="group cursor-pointer">
+                <TableRow 
+                  key={client.id} 
+                  className="group cursor-pointer"
+                  onClick={() => handleViewDetails(client.id)}
+                >
                   <TableCell className="pl-6">
                     <div className="flex items-center gap-3">
                       <Avatar className="h-9 w-9">
@@ -293,7 +250,7 @@ const Clients = () => {
                   <TableCell className="text-muted-foreground">{client.createdAt}</TableCell>
                   <TableCell className="pr-6">
                     <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
+                      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                         <Button
                           variant="ghost"
                           size="icon"
@@ -303,12 +260,25 @@ const Clients = () => {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-48">
-                        <DropdownMenuItem>View Details</DropdownMenuItem>
-                        <DropdownMenuItem>Edit Client</DropdownMenuItem>
-                        <DropdownMenuItem>Manage Subscription</DropdownMenuItem>
-                        <DropdownMenuItem>View Analytics</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleViewDetails(client.id)}>
+                          <Eye className="h-4 w-4 mr-2" />
+                          View Details
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate(`/clients/${client.id}?tab=edit`)}>
+                          <Edit className="h-4 w-4 mr-2" />
+                          Edit Client
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate(`/clients/${client.id}?tab=subscription`)}>
+                          <CreditCard className="h-4 w-4 mr-2" />
+                          Manage Subscription
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate(`/clients/${client.id}?tab=analytics`)}>
+                          <BarChart3 className="h-4 w-4 mr-2" />
+                          View Analytics
+                        </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem className="text-destructive">
+                          <PauseCircle className="h-4 w-4 mr-2" />
                           Suspend Account
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -320,6 +290,19 @@ const Clients = () => {
           </Table>
         </div>
       </div>
+
+      {/* Add Client Dialog */}
+      <AddClientDialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen} />
+
+      {/* Export Dialog */}
+      <ExportDialog
+        open={isExportDialogOpen}
+        onOpenChange={setIsExportDialogOpen}
+        title="Export Clients"
+        description="Export client data to a file"
+        dataType="clients"
+        columns={exportColumns}
+      />
     </DashboardLayout>
   );
 };
