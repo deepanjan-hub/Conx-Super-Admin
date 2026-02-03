@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,6 +9,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { InviteMemberDialog } from "@/components/settings/InviteMemberDialog";
+import { toast } from "sonner";
 import {
   User,
   Bell,
@@ -21,12 +24,20 @@ import {
 } from "lucide-react";
 
 const teamMembers = [
-  { id: "1", name: "Super Admin", email: "admin@qubelabs.ai", role: "Admin", status: "active" },
-  { id: "2", name: "Operations Manager", email: "ops@qubelabs.ai", role: "Ops Manager", status: "active" },
-  { id: "3", name: "Security Lead", email: "security@qubelabs.ai", role: "Support", status: "active" },
+  { id: "1", name: "Super Admin", email: "admin@qubelabs.ai", role: "Admin", status: "active", isSuperAdmin: true },
+  { id: "2", name: "Operations Manager", email: "ops@qubelabs.ai", role: "Ops Manager", status: "active", isSuperAdmin: false },
+  { id: "3", name: "Security Lead", email: "security@qubelabs.ai", role: "Support", status: "active", isSuperAdmin: false },
 ];
 
 const Settings = () => {
+  const [fullName, setFullName] = useState("Super Admin");
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+
+  const handleSaveChanges = () => {
+    // Simulate saving
+    toast.success("Profile updated successfully");
+  };
+
   return (
     <DashboardLayout title="Settings" subtitle="Manage your account and preferences">
       <div className="space-y-6 animate-fade-in max-w-4xl">
@@ -70,7 +81,11 @@ const Settings = () => {
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="name">Full Name</Label>
-                    <Input id="name" defaultValue="Super Admin" />
+                    <Input 
+                      id="name" 
+                      value={fullName} 
+                      onChange={(e) => setFullName(e.target.value)} 
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="email">Email Address</Label>
@@ -87,7 +102,7 @@ const Settings = () => {
                 </div>
 
                 <div className="flex justify-end">
-                  <Button className="gap-2">
+                  <Button className="gap-2" onClick={handleSaveChanges}>
                     <Save className="h-4 w-4" />
                     Save Changes
                   </Button>
@@ -104,7 +119,7 @@ const Settings = () => {
                     <CardTitle>Team Members</CardTitle>
                     <CardDescription>Manage admin team access and roles</CardDescription>
                   </div>
-                  <Button className="gap-2">
+                  <Button className="gap-2" onClick={() => setInviteDialogOpen(true)}>
                     <Users className="h-4 w-4" />
                     Invite Member
                   </Button>
@@ -135,9 +150,11 @@ const Settings = () => {
                         <Badge variant="secondary" className="bg-primary/10 text-primary">
                           {member.role}
                         </Badge>
-                        <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        {!member.isSuperAdmin && (
+                          <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -250,6 +267,8 @@ const Settings = () => {
             </Card>
           </TabsContent>
         </Tabs>
+        
+        <InviteMemberDialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen} />
       </div>
     </DashboardLayout>
   );
