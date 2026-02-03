@@ -17,7 +17,6 @@ import {
   Shield,
   Key,
   Save,
-  Upload,
   Trash2,
 } from "lucide-react";
 
@@ -66,16 +65,7 @@ const Settings = () => {
                       SA
                     </AvatarFallback>
                   </Avatar>
-                  <div className="space-y-2">
-                    <Button variant="outline" className="gap-2">
-                      <Upload className="h-4 w-4" />
-                      Upload Photo
-                    </Button>
-                    <p className="text-sm text-muted-foreground">JPG, PNG, or GIF. Max 2MB.</p>
-                  </div>
                 </div>
-
-                <Separator />
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
