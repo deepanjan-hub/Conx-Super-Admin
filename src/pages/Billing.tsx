@@ -1,4 +1,4 @@
-import { useState, forwardRef } from "react";
+import { useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -48,36 +48,10 @@ import {
   Receipt,
   Wallet,
   Pencil,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const initialPlans = [
-  {
-    id: "starter",
-    name: "Starter",
-    price: "$299",
-    period: "/month",
-    features: ["5 user seats", "10K conversations/mo", "Chat & Email only", "Basic analytics"],
-    clients: 12,
-  },
-  {
-    id: "professional",
-    name: "Professional",
-    price: "$899",
-    period: "/month",
-    features: ["25 user seats", "50K conversations/mo", "All channels", "Advanced analytics", "API access"],
-    clients: 45,
-    popular: true,
-  },
-  {
-    id: "enterprise",
-    name: "Enterprise",
-    price: "$2,499",
-    period: "/month",
-    features: ["200 user seats", "Unlimited conversations", "All channels", "Custom integrations", "White-label", "Priority support"],
-    clients: 18,
-  },
-];
+import { useBillingPlans, useAddBillingPlan, useUpdateBillingPlan } from "@/hooks/useBillingPlans";
 
 const revenueData = [
   { month: "Jan", mrr: 89200, newMrr: 8400, churnedMrr: 2100 },
@@ -120,7 +94,11 @@ const Billing = () => {
   const [isEditPlanOpen, setIsEditPlanOpen] = useState(false);
   const [editingPlanId, setEditingPlanId] = useState<string | null>(null);
   const [planWizardStep, setPlanWizardStep] = useState(1);
-  const [subscriptionPlans, setSubscriptionPlans] = useState(initialPlans);
+  
+  const { data: billingPlans = [], isLoading } = useBillingPlans();
+  const addPlanMutation = useAddBillingPlan();
+  const updatePlanMutation = useUpdateBillingPlan();
+
   const [newPlan, setNewPlan] = useState({
     name: "",
     price: "",
@@ -178,22 +156,22 @@ const Billing = () => {
     }));
   };
 
-  const handleEditPlan = (plan: typeof subscriptionPlans[0]) => {
-    // Parse existing plan data
+  const handleEditPlan = (plan: typeof billingPlans[0]) => {
+    // Parse existing plan data from description array
     const priceMatch = plan.price.match(/\$?([\d,]+)/);
     const price = priceMatch ? priceMatch[1].replace(/,/g, "") : "";
-    const period = plan.period.includes("year") ? "year" : "month";
+    const period = plan.price.includes("year") ? "year" : "month";
     
-    // Extract user seats and conversations from features
-    const seatsMatch = plan.features.find(f => f.includes("user seats"));
-    const convoMatch = plan.features.find(f => f.includes("conversations"));
+    // Extract user seats and conversations from description
+    const seatsMatch = plan.description.find(f => f.includes("user"));
+    const convoMatch = plan.description.find(f => f.includes("conversations"));
     const userSeats = seatsMatch ? seatsMatch.match(/(\d+)/)?.[1] || "" : "";
     const conversations = convoMatch ? convoMatch.match(/([\d,]+)/)?.[1]?.replace(/,/g, "") || "" : "";
     
     // Extract channels
     const allChannels = ["Chat", "Email", "Voice", "SMS", "WhatsApp", "Social Media"];
     const channels = allChannels.filter(ch => 
-      plan.features.some(f => f.toLowerCase().includes(ch.toLowerCase()))
+      plan.description.some(f => f.toLowerCase().includes(ch.toLowerCase()))
     );
     
     // Extract features
@@ -202,7 +180,7 @@ const Billing = () => {
       "White-label", "Priority support", "Dedicated account manager", "Custom SLA", "SSO/SAML", "Audit logs"
     ];
     const features = allFeatureOptions.filter(feat => 
-      plan.features.some(f => f.toLowerCase() === feat.toLowerCase())
+      plan.description.some(f => f.toLowerCase() === feat.toLowerCase())
     );
     
     setEditPlan({
@@ -218,7 +196,7 @@ const Billing = () => {
     setIsEditPlanOpen(true);
   };
 
-  const handleSaveEditPlan = () => {
+  const handleSaveEditPlan = async () => {
     if (!editingPlanId) return;
     
     const allFeatures = [
@@ -228,20 +206,35 @@ const Billing = () => {
       ...editPlan.features,
     ];
     
-    setSubscriptionPlans(prev => prev.map(plan => 
-      plan.id === editingPlanId
-        ? {
-            ...plan,
-            name: editPlan.name,
-            price: `$${editPlan.price}`,
-            period: `/${editPlan.period}`,
-            features: allFeatures,
-          }
-        : plan
-    ));
+    await updatePlanMutation.mutateAsync({
+      id: editingPlanId,
+      updates: {
+        name: editPlan.name,
+        price: `$${editPlan.price}/${editPlan.period}`,
+        description: allFeatures,
+      },
+    });
     
     setIsEditPlanOpen(false);
     setEditingPlanId(null);
+  };
+
+  const handleCreatePlan = async () => {
+    const allFeatures = [
+      `${newPlan.userSeats || "0"} user seats`,
+      `${newPlan.conversations || "0"} conversations/mo`,
+      ...newPlan.channels,
+      ...newPlan.features,
+    ];
+    
+    await addPlanMutation.mutateAsync({
+      name: newPlan.name,
+      price: `$${newPlan.price}/${newPlan.period}`,
+      description: allFeatures,
+      is_popular: false,
+    });
+    
+    handleCreatePlanClose(false);
   };
 
   const toggleEditChannel = (channel: string) => {
@@ -346,51 +339,54 @@ const Billing = () => {
 
           {/* Plans Tab */}
           <TabsContent value="plans" className="space-y-6">
-            <div className="grid gap-6 md:grid-cols-3">
-              {subscriptionPlans.map((plan) => (
-                <Card
-                  key={plan.id}
-                  className={cn(
-                    "shadow-card relative",
-                    plan.popular && "border-primary ring-1 ring-primary"
-                  )}
-                >
-                  {plan.popular && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                      <Badge className="bg-primary text-primary-foreground">Most Popular</Badge>
-                    </div>
-                  )}
-                  <CardHeader className="text-center">
-                    <CardTitle className="text-lg">{plan.name}</CardTitle>
-                    <div className="mt-2">
-                      <span className="text-4xl font-bold text-foreground">{plan.price}</span>
-                      <span className="text-muted-foreground">{plan.period}</span>
-                    </div>
-                    <CardDescription className="mt-2">
-                      {plan.clients} active clients
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <ul className="space-y-3">
-                      {plan.features.map((feature, index) => (
-                        <li key={index} className="flex items-center gap-2 text-sm">
-                          <CheckCircle className="h-4 w-4 text-success" />
-                          <span>{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    <Button 
-                      variant="outline" 
-                      className="w-full mt-6 gap-2"
-                      onClick={() => handleEditPlan(plan)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                      Edit Plan
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            {isLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : (
+              <div className="grid gap-6 md:grid-cols-3">
+                {billingPlans.map((plan) => (
+                  <Card
+                    key={plan.id}
+                    className={cn(
+                      "shadow-card relative",
+                      plan.is_popular && "border-primary ring-1 ring-primary"
+                    )}
+                  >
+                    {plan.is_popular && (
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                        <Badge className="bg-primary text-primary-foreground">Most Popular</Badge>
+                      </div>
+                    )}
+                    <CardHeader className="text-center">
+                      <CardTitle className="text-lg">{plan.name}</CardTitle>
+                      <div className="mt-2">
+                        <span className="text-4xl font-bold text-foreground">{plan.price.split('/')[0]}</span>
+                        <span className="text-muted-foreground">/{plan.price.split('/')[1] || 'mo'}</span>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="space-y-3">
+                        {plan.description.map((feature, index) => (
+                          <li key={index} className="flex items-center gap-2 text-sm">
+                            <CheckCircle className="h-4 w-4 text-success" />
+                            <span>{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      <Button 
+                        variant="outline" 
+                        className="w-full mt-6 gap-2"
+                        onClick={() => handleEditPlan(plan)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                        Edit Plan
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
             <div className="flex justify-end">
               <Dialog open={isCreatePlanOpen} onOpenChange={handleCreatePlanClose}>
                 <DialogTrigger asChild>
@@ -570,30 +566,17 @@ const Billing = () => {
                     ) : (
                       <Button
                         type="button"
-                        onClick={() => {
-                          // Build features list
-                          const allFeatures = [
-                            `${newPlan.userSeats || "0"} user seats`,
-                            `${newPlan.conversations || "0"} conversations/mo`,
-                            ...newPlan.channels,
-                            ...newPlan.features,
-                          ];
-                          
-                          // Add the new plan to the list
-                          const planToAdd = {
-                            id: newPlan.name.toLowerCase().replace(/\s+/g, "-"),
-                            name: newPlan.name,
-                            price: `$${newPlan.price}`,
-                            period: `/${newPlan.period}`,
-                            features: allFeatures,
-                            clients: 0,
-                          };
-                          
-                          setSubscriptionPlans(prev => [...prev, planToAdd]);
-                          handleCreatePlanClose(false);
-                        }}
+                        onClick={handleCreatePlan}
+                        disabled={addPlanMutation.isPending}
                       >
-                        Create Plan
+                        {addPlanMutation.isPending ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Creating...
+                          </>
+                        ) : (
+                          "Create Plan"
+                        )}
                       </Button>
                     )}
                   </DialogFooter>
@@ -715,8 +698,18 @@ const Billing = () => {
                   <Button variant="outline" onClick={() => setIsEditPlanOpen(false)}>
                     Cancel
                   </Button>
-                  <Button onClick={handleSaveEditPlan} disabled={!editPlan.name || !editPlan.price}>
-                    Save Changes
+                  <Button 
+                    onClick={handleSaveEditPlan} 
+                    disabled={!editPlan.name || !editPlan.price || updatePlanMutation.isPending}
+                  >
+                    {updatePlanMutation.isPending ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      "Save Changes"
+                    )}
                   </Button>
                 </DialogFooter>
               </DialogContent>

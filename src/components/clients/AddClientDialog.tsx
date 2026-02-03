@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { useClientStore } from "@/stores/clientStore";
+import { useAddClient } from "@/hooks/useClients";
 
 interface AddClientDialogProps {
   open: boolean;
@@ -28,8 +28,7 @@ interface AddClientDialogProps {
 }
 
 export const AddClientDialog = ({ open, onOpenChange }: AddClientDialogProps) => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const addClient = useClientStore((state) => state.addClient);
+  const addClientMutation = useAddClient();
   
   const [formData, setFormData] = useState({
     companyName: "",
@@ -56,12 +55,7 @@ export const AddClientDialog = ({ open, onOpenChange }: AddClientDialogProps) =>
   const handleSubmit = async () => {
     if (!validateForm()) return;
     
-    setIsSubmitting(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    addClient({
+    await addClientMutation.mutateAsync({
       name: formData.companyName,
       email: formData.adminEmail,
       plan: "Starter",
@@ -69,14 +63,12 @@ export const AddClientDialog = ({ open, onOpenChange }: AddClientDialogProps) =>
       users: 1,
       conversations: "0",
       mrr: "$299",
-      createdAt: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
     });
     
     toast.success(`${formData.companyName} has been created successfully!`, {
       description: `Invitation email sent to ${formData.adminEmail}`,
     });
     
-    setIsSubmitting(false);
     onOpenChange(false);
     
     // Reset form
@@ -191,8 +183,8 @@ export const AddClientDialog = ({ open, onOpenChange }: AddClientDialogProps) =>
           <Button variant="outline" onClick={handleClose}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={isSubmitting}>
-            {isSubmitting ? (
+          <Button onClick={handleSubmit} disabled={addClientMutation.isPending}>
+            {addClientMutation.isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Creating...
