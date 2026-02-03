@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, AlertTriangle, TrendingDown, Shield, UserPlus, X, CheckCircle } from "lucide-react";
+import { Bell, AlertTriangle, Shield, UserPlus, X, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -16,7 +16,7 @@ import { toast } from "sonner";
 const STORAGE_KEY = "notification_read_status";
 interface Notification {
   id: string;
-  type: "sla_breach" | "sentiment_dip" | "fraud_alert" | "new_client" | "system";
+  type: "sla_breach" | "fraud_alert" | "new_client" | "system";
   title: string;
   message: string;
   time: string;
@@ -33,15 +33,6 @@ const mockNotifications: Notification[] = [
     time: "2 min ago",
     read: false,
     severity: "critical",
-  },
-  {
-    id: "2",
-    type: "sentiment_dip",
-    title: "Sentiment Drop Detected",
-    message: "Negative sentiment increased 15% for Acme Corp",
-    time: "15 min ago",
-    read: false,
-    severity: "warning",
   },
   {
     id: "3",
@@ -74,7 +65,6 @@ const mockNotifications: Notification[] = [
 
 const notificationIcons = {
   sla_breach: AlertTriangle,
-  sentiment_dip: TrendingDown,
   fraud_alert: Shield,
   new_client: UserPlus,
   system: Bell,
@@ -89,7 +79,6 @@ const severityColors = {
 // Route mapping for notification types
 const notificationRoutes: Record<Notification["type"], string> = {
   sla_breach: "/security",
-  sentiment_dip: "/sentiment",
   fraud_alert: "/security",
   new_client: "/clients",
   system: "/config",
@@ -147,10 +136,10 @@ export function NotificationCenter() {
           severity: "critical" as const,
         },
         {
-          type: "sentiment_dip" as const,
-          title: "Sentiment Drop",
-          message: "Customer satisfaction dropped by 8%",
-          severity: "warning" as const,
+          type: "fraud_alert" as const,
+          title: "Fraud Detection Alert",
+          message: "Unusual login pattern detected",
+          severity: "critical" as const,
         },
         {
           type: "new_client" as const,
@@ -172,13 +161,9 @@ export function NotificationCenter() {
 
         setNotifications((prev) => [newNotification, ...prev.slice(0, 9)]);
 
-        // Show toast for critical/warning notifications
+        // Show toast for critical notifications
         if (event.severity === "critical") {
           toast.error(event.title, {
-            description: event.message,
-          });
-        } else if (event.severity === "warning") {
-          toast.warning(event.title, {
             description: event.message,
           });
         } else {
