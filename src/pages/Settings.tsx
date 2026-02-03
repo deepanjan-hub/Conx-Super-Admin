@@ -255,14 +255,6 @@ const Settings = () => {
                   </div>
                   <Switch defaultChecked />
                 </div>
-                <Separator />
-                <div className="flex items-center justify-between py-2">
-                  <div>
-                    <Label className="text-base">Weekly Reports</Label>
-                    <p className="text-sm text-muted-foreground">Receive weekly performance summaries</p>
-                  </div>
-                  <Switch />
-                </div>
               </CardContent>
             </Card>
           </TabsContent>
