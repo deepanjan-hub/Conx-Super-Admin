@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Bell, AlertTriangle, TrendingDown, Shield, UserPlus, X, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+
+const STORAGE_KEY = "notification_read_status";
 interface Notification {
   id: string;
   type: "sla_breach" | "sentiment_dip" | "fraud_alert" | "new_client" | "system";
@@ -93,12 +95,46 @@ const notificationRoutes: Record<Notification["type"], string> = {
   system: "/config",
 };
 
+// Load read status from localStorage
+const loadReadStatus = (): Record<string, boolean> => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    return stored ? JSON.parse(stored) : {};
+  } catch {
+    return {};
+  }
+};
+
+// Save read status to localStorage
+const saveReadStatus = (readStatus: Record<string, boolean>) => {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(readStatus));
+  } catch {
+    // Ignore storage errors
+  }
+};
+
 export function NotificationCenter() {
   const navigate = useNavigate();
-  const [notifications, setNotifications] = useState<Notification[]>(mockNotifications);
+  const [notifications, setNotifications] = useState<Notification[]>(() => {
+    const readStatus = loadReadStatus();
+    return mockNotifications.map((n) => ({
+      ...n,
+      read: readStatus[n.id] !== undefined ? readStatus[n.id] : n.read,
+    }));
+  });
   const [isOpen, setIsOpen] = useState(false);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
+
+  // Persist read status whenever notifications change
+  useEffect(() => {
+    const readStatus: Record<string, boolean> = {};
+    notifications.forEach((n) => {
+      readStatus[n.id] = n.read;
+    });
+    saveReadStatus(readStatus);
+  }, [notifications]);
 
   // Simulate real-time notifications
   useEffect(() => {
@@ -156,16 +192,16 @@ export function NotificationCenter() {
     return () => clearInterval(interval);
   }, []);
 
-  const markAsRead = (id: string) => {
+  const markAsRead = useCallback((id: string) => {
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, read: true } : n))
     );
-  };
+  }, []);
 
-  const markAllAsRead = () => {
+  const markAllAsRead = useCallback(() => {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     toast.success("All notifications marked as read");
-  };
+  }, []);
 
   const dismissNotification = (id: string) => {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
