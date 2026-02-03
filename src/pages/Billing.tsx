@@ -47,6 +47,7 @@ import {
   FileText,
   Receipt,
   Wallet,
+  Pencil,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -116,9 +117,20 @@ const Billing = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddCreditsOpen, setIsAddCreditsOpen] = useState(false);
   const [isCreatePlanOpen, setIsCreatePlanOpen] = useState(false);
+  const [isEditPlanOpen, setIsEditPlanOpen] = useState(false);
+  const [editingPlanId, setEditingPlanId] = useState<string | null>(null);
   const [planWizardStep, setPlanWizardStep] = useState(1);
   const [subscriptionPlans, setSubscriptionPlans] = useState(initialPlans);
   const [newPlan, setNewPlan] = useState({
+    name: "",
+    price: "",
+    period: "month",
+    userSeats: "",
+    conversations: "",
+    channels: [] as string[],
+    features: [] as string[],
+  });
+  const [editPlan, setEditPlan] = useState({
     name: "",
     price: "",
     period: "month",
@@ -159,6 +171,90 @@ const Billing = () => {
 
   const toggleFeature = (feature: string) => {
     setNewPlan(prev => ({
+      ...prev,
+      features: prev.features.includes(feature)
+        ? prev.features.filter(f => f !== feature)
+        : [...prev.features, feature]
+    }));
+  };
+
+  const handleEditPlan = (plan: typeof subscriptionPlans[0]) => {
+    // Parse existing plan data
+    const priceMatch = plan.price.match(/\$?([\d,]+)/);
+    const price = priceMatch ? priceMatch[1].replace(/,/g, "") : "";
+    const period = plan.period.includes("year") ? "year" : "month";
+    
+    // Extract user seats and conversations from features
+    const seatsMatch = plan.features.find(f => f.includes("user seats"));
+    const convoMatch = plan.features.find(f => f.includes("conversations"));
+    const userSeats = seatsMatch ? seatsMatch.match(/(\d+)/)?.[1] || "" : "";
+    const conversations = convoMatch ? convoMatch.match(/([\d,]+)/)?.[1]?.replace(/,/g, "") || "" : "";
+    
+    // Extract channels
+    const allChannels = ["Chat", "Email", "Voice", "SMS", "WhatsApp", "Social Media"];
+    const channels = allChannels.filter(ch => 
+      plan.features.some(f => f.toLowerCase().includes(ch.toLowerCase()))
+    );
+    
+    // Extract features
+    const allFeatureOptions = [
+      "Basic analytics", "Advanced analytics", "API access", "Custom integrations",
+      "White-label", "Priority support", "Dedicated account manager", "Custom SLA", "SSO/SAML", "Audit logs"
+    ];
+    const features = allFeatureOptions.filter(feat => 
+      plan.features.some(f => f.toLowerCase() === feat.toLowerCase())
+    );
+    
+    setEditPlan({
+      name: plan.name,
+      price,
+      period,
+      userSeats,
+      conversations,
+      channels,
+      features,
+    });
+    setEditingPlanId(plan.id);
+    setIsEditPlanOpen(true);
+  };
+
+  const handleSaveEditPlan = () => {
+    if (!editingPlanId) return;
+    
+    const allFeatures = [
+      `${editPlan.userSeats || "0"} user seats`,
+      `${editPlan.conversations || "0"} conversations/mo`,
+      ...editPlan.channels,
+      ...editPlan.features,
+    ];
+    
+    setSubscriptionPlans(prev => prev.map(plan => 
+      plan.id === editingPlanId
+        ? {
+            ...plan,
+            name: editPlan.name,
+            price: `$${editPlan.price}`,
+            period: `/${editPlan.period}`,
+            features: allFeatures,
+          }
+        : plan
+    ));
+    
+    setIsEditPlanOpen(false);
+    setEditingPlanId(null);
+  };
+
+  const toggleEditChannel = (channel: string) => {
+    setEditPlan(prev => ({
+      ...prev,
+      channels: prev.channels.includes(channel)
+        ? prev.channels.filter(c => c !== channel)
+        : [...prev.channels, channel]
+    }));
+  };
+
+  const toggleEditFeature = (feature: string) => {
+    setEditPlan(prev => ({
       ...prev,
       features: prev.features.includes(feature)
         ? prev.features.filter(f => f !== feature)
@@ -283,7 +379,12 @@ const Billing = () => {
                         </li>
                       ))}
                     </ul>
-                    <Button variant="outline" className="w-full mt-6">
+                    <Button 
+                      variant="outline" 
+                      className="w-full mt-6 gap-2"
+                      onClick={() => handleEditPlan(plan)}
+                    >
+                      <Pencil className="h-4 w-4" />
                       Edit Plan
                     </Button>
                   </CardContent>
@@ -499,6 +600,127 @@ const Billing = () => {
                 </DialogContent>
               </Dialog>
             </div>
+
+            {/* Edit Plan Dialog */}
+            <Dialog open={isEditPlanOpen} onOpenChange={setIsEditPlanOpen}>
+              <DialogContent className="sm:max-w-[500px]">
+                <DialogHeader>
+                  <DialogTitle>Edit Plan</DialogTitle>
+                  <DialogDescription>
+                    Modify the plan details below
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-plan-name">Plan Name</Label>
+                    <Input
+                      id="edit-plan-name"
+                      value={editPlan.name}
+                      onChange={(e) => setEditPlan(prev => ({ ...prev, name: e.target.value }))}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-plan-price">Price (USD)</Label>
+                      <Input
+                        id="edit-plan-price"
+                        type="number"
+                        value={editPlan.price}
+                        onChange={(e) => setEditPlan(prev => ({ ...prev, price: e.target.value }))}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-plan-period">Billing Period</Label>
+                      <Select
+                        value={editPlan.period}
+                        onValueChange={(value) => setEditPlan(prev => ({ ...prev, period: value }))}
+                      >
+                        <SelectTrigger id="edit-plan-period">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="month">Monthly</SelectItem>
+                          <SelectItem value="year">Yearly</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-user-seats">User Seats</Label>
+                      <Input
+                        id="edit-user-seats"
+                        type="number"
+                        value={editPlan.userSeats}
+                        onChange={(e) => setEditPlan(prev => ({ ...prev, userSeats: e.target.value }))}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-conversations">Conversations/mo</Label>
+                      <Input
+                        id="edit-conversations"
+                        type="number"
+                        value={editPlan.conversations}
+                        onChange={(e) => setEditPlan(prev => ({ ...prev, conversations: e.target.value }))}
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Channels</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {["Chat", "Email", "Voice", "SMS", "WhatsApp", "Social Media"].map((channel) => (
+                        <Button
+                          key={channel}
+                          type="button"
+                          variant={editPlan.channels.includes(channel) ? "default" : "outline"}
+                          size="sm"
+                          className="justify-start"
+                          onClick={() => toggleEditChannel(channel)}
+                        >
+                          {editPlan.channels.includes(channel) && (
+                            <CheckCircle className="h-4 w-4 mr-2" />
+                          )}
+                          {channel}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Features</Label>
+                    <div className="grid grid-cols-1 gap-2">
+                      {[
+                        "Basic analytics", "Advanced analytics", "API access", "Custom integrations",
+                        "White-label", "Priority support", "Dedicated account manager", "Custom SLA", "SSO/SAML", "Audit logs"
+                      ].map((feature) => (
+                        <Button
+                          key={feature}
+                          type="button"
+                          variant={editPlan.features.includes(feature) ? "default" : "outline"}
+                          size="sm"
+                          className="justify-start"
+                          onClick={() => toggleEditFeature(feature)}
+                        >
+                          {editPlan.features.includes(feature) && (
+                            <CheckCircle className="h-4 w-4 mr-2" />
+                          )}
+                          {feature}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsEditPlanOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleSaveEditPlan} disabled={!editPlan.name || !editPlan.price}>
+                    Save Changes
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </TabsContent>
 
           {/* Invoices Tab */}
