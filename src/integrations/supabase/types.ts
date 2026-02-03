@@ -14,6 +14,75 @@ export type Database = {
   }
   public: {
     Tables: {
+      billing_plans: {
+        Row: {
+          created_at: string
+          description: string[]
+          id: string
+          is_popular: boolean
+          name: string
+          price: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string[]
+          id?: string
+          is_popular?: boolean
+          name: string
+          price: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string[]
+          id?: string
+          is_popular?: boolean
+          name?: string
+          price?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      clients: {
+        Row: {
+          conversations: string
+          created_at: string
+          email: string
+          id: string
+          mrr: string
+          name: string
+          plan: string
+          status: string
+          updated_at: string
+          users: number
+        }
+        Insert: {
+          conversations?: string
+          created_at?: string
+          email: string
+          id?: string
+          mrr?: string
+          name: string
+          plan?: string
+          status?: string
+          updated_at?: string
+          users?: number
+        }
+        Update: {
+          conversations?: string
+          created_at?: string
+          email?: string
+          id?: string
+          mrr?: string
+          name?: string
+          plan?: string
+          status?: string
+          updated_at?: string
+          users?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -40,6 +109,77 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      support_tickets: {
+        Row: {
+          client_company: string
+          client_email: string
+          client_name: string
+          created_at: string
+          id: string
+          priority: string
+          status: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          client_company: string
+          client_email: string
+          client_name: string
+          created_at?: string
+          id?: string
+          priority?: string
+          status?: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          client_company?: string
+          client_email?: string
+          client_name?: string
+          created_at?: string
+          id?: string
+          priority?: string
+          status?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      ticket_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          sender: string
+          sender_type: string
+          ticket_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          sender: string
+          sender_type?: string
+          ticket_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          sender?: string
+          sender_type?: string
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_messages_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "support_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {

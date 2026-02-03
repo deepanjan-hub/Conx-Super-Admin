@@ -20,20 +20,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Search, Plus, MoreHorizontal, Filter, Download, Eye, Edit, CreditCard, BarChart3, PauseCircle, PlayCircle } from "lucide-react";
+import { Search, Plus, MoreHorizontal, Filter, Download, Eye, Edit, CreditCard, BarChart3, PauseCircle, PlayCircle, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AddClientDialog } from "@/components/clients/AddClientDialog";
 import { ExportDialog } from "@/components/shared/ExportDialog";
-import { useClientStore } from "@/stores/clientStore";
+import { useClients, useUpdateClient } from "@/hooks/useClients";
 import { toast } from "sonner";
 
-const planColors = {
+const planColors: Record<string, string> = {
   Starter: "bg-secondary text-secondary-foreground",
   Professional: "bg-primary/10 text-primary",
   Enterprise: "bg-accent text-accent-foreground border border-primary/20",
 };
 
-const statusColors = {
+const statusColors: Record<string, string> = {
   Active: "bg-success/10 text-success",
   Suspended: "bg-destructive/10 text-destructive",
   Pending: "bg-warning/10 text-warning",
@@ -47,17 +47,23 @@ const Clients = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   
-  const clients = useClientStore((state) => state.clients);
-  const updateClient = useClientStore((state) => state.updateClient);
+  const { data: clients = [], isLoading } = useClients();
+  const updateClientMutation = useUpdateClient();
 
   const handleToggleSuspend = (e: React.MouseEvent, client: typeof clients[0]) => {
     e.stopPropagation();
     const newStatus = client.status === "Suspended" ? "Active" : "Suspended";
-    updateClient(client.id, { status: newStatus });
-    toast.success(
-      newStatus === "Suspended" 
-        ? `${client.name} has been suspended` 
-        : `${client.name} has been reactivated`
+    updateClientMutation.mutate(
+      { id: client.id, updates: { status: newStatus } },
+      {
+        onSuccess: () => {
+          toast.success(
+            newStatus === "Suspended" 
+              ? `${client.name} has been suspended` 
+              : `${client.name} has been reactivated`
+          );
+        },
+      }
     );
   };
 
@@ -69,6 +75,14 @@ const Clients = () => {
 
   const handleViewDetails = (clientId: string) => {
     navigate(`/clients/${clientId}`);
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
   };
 
   return (
@@ -119,7 +133,16 @@ const Clients = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredClients.length === 0 ? (
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="h-32 text-center">
+                    <div className="flex flex-col items-center justify-center text-muted-foreground">
+                      <Loader2 className="h-8 w-8 mb-2 animate-spin" />
+                      <p>Loading clients...</p>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : filteredClients.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={8} className="h-32 text-center">
                     <div className="flex flex-col items-center justify-center text-muted-foreground">
@@ -153,14 +176,14 @@ const Clients = () => {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="secondary" className={cn("font-medium", planColors[client.plan])}>
+                      <Badge variant="secondary" className={cn("font-medium", planColors[client.plan] || "")}>
                         {client.plan}
                       </Badge>
                     </TableCell>
                     <TableCell>
                       <Badge
                         variant="secondary"
-                        className={cn("font-medium", statusColors[client.status])}
+                        className={cn("font-medium", statusColors[client.status] || "")}
                       >
                         {client.status}
                       </Badge>
@@ -170,7 +193,7 @@ const Clients = () => {
                     <TableCell className="text-right font-semibold text-foreground">
                       {client.mrr}
                     </TableCell>
-                    <TableCell className="text-muted-foreground">{client.createdAt}</TableCell>
+                    <TableCell className="text-muted-foreground">{formatDate(client.created_at)}</TableCell>
                     <TableCell className="pr-6">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
