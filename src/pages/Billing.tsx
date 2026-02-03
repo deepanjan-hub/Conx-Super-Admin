@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, forwardRef } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -115,6 +115,55 @@ const statusColors = {
 const Billing = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddCreditsOpen, setIsAddCreditsOpen] = useState(false);
+  const [isCreatePlanOpen, setIsCreatePlanOpen] = useState(false);
+  const [planWizardStep, setPlanWizardStep] = useState(1);
+  const [newPlan, setNewPlan] = useState({
+    name: "",
+    price: "",
+    period: "month",
+    userSeats: "",
+    conversations: "",
+    channels: [] as string[],
+    features: [] as string[],
+  });
+
+  const resetPlanWizard = () => {
+    setPlanWizardStep(1);
+    setNewPlan({
+      name: "",
+      price: "",
+      period: "month",
+      userSeats: "",
+      conversations: "",
+      channels: [],
+      features: [],
+    });
+  };
+
+  const handleCreatePlanClose = (open: boolean) => {
+    if (!open) {
+      resetPlanWizard();
+    }
+    setIsCreatePlanOpen(open);
+  };
+
+  const toggleChannel = (channel: string) => {
+    setNewPlan(prev => ({
+      ...prev,
+      channels: prev.channels.includes(channel)
+        ? prev.channels.filter(c => c !== channel)
+        : [...prev.channels, channel]
+    }));
+  };
+
+  const toggleFeature = (feature: string) => {
+    setNewPlan(prev => ({
+      ...prev,
+      features: prev.features.includes(feature)
+        ? prev.features.filter(f => f !== feature)
+        : [...prev.features, feature]
+    }));
+  };
 
   return (
     <DashboardLayout title="Billing & Subscriptions" subtitle="Manage plans, invoices, and payments">
@@ -241,10 +290,195 @@ const Billing = () => {
               ))}
             </div>
             <div className="flex justify-end">
-              <Button className="gap-2">
-                <Plus className="h-4 w-4" />
-                Create New Plan
-              </Button>
+              <Dialog open={isCreatePlanOpen} onOpenChange={handleCreatePlanClose}>
+                <DialogTrigger asChild>
+                  <Button className="gap-2">
+                    <Plus className="h-4 w-4" />
+                    Create New Plan
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[500px]">
+                  <DialogHeader>
+                    <DialogTitle>
+                      {planWizardStep === 1 && "Create New Plan - Basic Info"}
+                      {planWizardStep === 2 && "Create New Plan - Limits & Channels"}
+                      {planWizardStep === 3 && "Create New Plan - Features"}
+                    </DialogTitle>
+                    <DialogDescription>
+                      Step {planWizardStep} of 3
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  {/* Step 1: Basic Info */}
+                  {planWizardStep === 1 && (
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="plan-name">Plan Name</Label>
+                        <Input
+                          id="plan-name"
+                          placeholder="e.g., Business Pro"
+                          value={newPlan.name}
+                          onChange={(e) => setNewPlan(prev => ({ ...prev, name: e.target.value }))}
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="plan-price">Price (USD)</Label>
+                          <Input
+                            id="plan-price"
+                            type="number"
+                            placeholder="499"
+                            value={newPlan.price}
+                            onChange={(e) => setNewPlan(prev => ({ ...prev, price: e.target.value }))}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="plan-period">Billing Period</Label>
+                          <Select
+                            value={newPlan.period}
+                            onValueChange={(value) => setNewPlan(prev => ({ ...prev, period: value }))}
+                          >
+                            <SelectTrigger id="plan-period">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="month">Monthly</SelectItem>
+                              <SelectItem value="year">Yearly</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Step 2: Limits & Channels */}
+                  {planWizardStep === 2 && (
+                    <div className="space-y-4 py-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="user-seats">User Seats</Label>
+                          <Input
+                            id="user-seats"
+                            type="number"
+                            placeholder="25"
+                            value={newPlan.userSeats}
+                            onChange={(e) => setNewPlan(prev => ({ ...prev, userSeats: e.target.value }))}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="conversations">Conversations/mo</Label>
+                          <Input
+                            id="conversations"
+                            type="number"
+                            placeholder="50000"
+                            value={newPlan.conversations}
+                            onChange={(e) => setNewPlan(prev => ({ ...prev, conversations: e.target.value }))}
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Channels</Label>
+                        <div className="grid grid-cols-2 gap-2">
+                          {["Chat", "Email", "Voice", "SMS", "WhatsApp", "Social Media"].map((channel) => (
+                            <Button
+                              key={channel}
+                              type="button"
+                              variant={newPlan.channels.includes(channel) ? "default" : "outline"}
+                              size="sm"
+                              className="justify-start"
+                              onClick={() => toggleChannel(channel)}
+                            >
+                              {newPlan.channels.includes(channel) && (
+                                <CheckCircle className="h-4 w-4 mr-2" />
+                              )}
+                              {channel}
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Step 3: Features */}
+                  {planWizardStep === 3 && (
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <Label>Select Features</Label>
+                        <div className="grid grid-cols-1 gap-2 max-h-[300px] overflow-y-auto">
+                          {[
+                            "Basic analytics",
+                            "Advanced analytics",
+                            "API access",
+                            "Custom integrations",
+                            "White-label",
+                            "Priority support",
+                            "Dedicated account manager",
+                            "Custom SLA",
+                            "SSO/SAML",
+                            "Audit logs",
+                          ].map((feature) => (
+                            <Button
+                              key={feature}
+                              type="button"
+                              variant={newPlan.features.includes(feature) ? "default" : "outline"}
+                              size="sm"
+                              className="justify-start"
+                              onClick={() => toggleFeature(feature)}
+                            >
+                              {newPlan.features.includes(feature) && (
+                                <CheckCircle className="h-4 w-4 mr-2" />
+                              )}
+                              {feature}
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      {/* Summary */}
+                      <div className="p-4 rounded-lg bg-secondary/50 space-y-2">
+                        <h4 className="font-medium text-sm">Plan Summary</h4>
+                        <div className="text-sm text-muted-foreground space-y-1">
+                          <p><strong>Name:</strong> {newPlan.name || "—"}</p>
+                          <p><strong>Price:</strong> ${newPlan.price || "0"}/{newPlan.period}</p>
+                          <p><strong>Seats:</strong> {newPlan.userSeats || "0"}</p>
+                          <p><strong>Channels:</strong> {newPlan.channels.join(", ") || "None selected"}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <DialogFooter className="flex gap-2">
+                    {planWizardStep > 1 && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setPlanWizardStep(prev => prev - 1)}
+                      >
+                        Back
+                      </Button>
+                    )}
+                    {planWizardStep < 3 ? (
+                      <Button
+                        type="button"
+                        onClick={() => setPlanWizardStep(prev => prev + 1)}
+                        disabled={planWizardStep === 1 && (!newPlan.name || !newPlan.price)}
+                      >
+                        Next
+                      </Button>
+                    ) : (
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          // Here you would save the plan to the database
+                          handleCreatePlanClose(false);
+                        }}
+                      >
+                        Create Plan
+                      </Button>
+                    )}
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </div>
           </TabsContent>
 
