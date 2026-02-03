@@ -50,7 +50,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const subscriptionPlans = [
+const initialPlans = [
   {
     id: "starter",
     name: "Starter",
@@ -117,6 +117,7 @@ const Billing = () => {
   const [isAddCreditsOpen, setIsAddCreditsOpen] = useState(false);
   const [isCreatePlanOpen, setIsCreatePlanOpen] = useState(false);
   const [planWizardStep, setPlanWizardStep] = useState(1);
+  const [subscriptionPlans, setSubscriptionPlans] = useState(initialPlans);
   const [newPlan, setNewPlan] = useState({
     name: "",
     price: "",
@@ -469,7 +470,25 @@ const Billing = () => {
                       <Button
                         type="button"
                         onClick={() => {
-                          // Here you would save the plan to the database
+                          // Build features list
+                          const allFeatures = [
+                            `${newPlan.userSeats || "0"} user seats`,
+                            `${newPlan.conversations || "0"} conversations/mo`,
+                            ...newPlan.channels,
+                            ...newPlan.features,
+                          ];
+                          
+                          // Add the new plan to the list
+                          const planToAdd = {
+                            id: newPlan.name.toLowerCase().replace(/\s+/g, "-"),
+                            name: newPlan.name,
+                            price: `$${newPlan.price}`,
+                            period: `/${newPlan.period}`,
+                            features: allFeatures,
+                            clients: 0,
+                          };
+                          
+                          setSubscriptionPlans(prev => [...prev, planToAdd]);
                           handleCreatePlanClose(false);
                         }}
                       >
