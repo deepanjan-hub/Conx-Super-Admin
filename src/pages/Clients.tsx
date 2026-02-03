@@ -119,98 +119,109 @@ const Clients = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredClients.map((client) => (
-                <TableRow 
-                  key={client.id} 
-                  className="group cursor-pointer"
-                  onClick={() => handleViewDetails(client.id)}
-                >
-                  <TableCell className="pl-6">
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-9 w-9">
-                        <AvatarFallback className="bg-primary/5 text-primary text-xs font-medium">
-                          {client.name
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")
-                            .slice(0, 2)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium text-foreground">{client.name}</p>
-                        <p className="text-sm text-muted-foreground">{client.email}</p>
-                      </div>
+              {filteredClients.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="h-32 text-center">
+                    <div className="flex flex-col items-center justify-center text-muted-foreground">
+                      <Search className="h-8 w-8 mb-2 opacity-50" />
+                      <p>{searchQuery ? "No clients match your search" : "No clients found"}</p>
                     </div>
                   </TableCell>
-                  <TableCell>
-                    <Badge variant="secondary" className={cn("font-medium", planColors[client.plan])}>
-                      {client.plan}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant="secondary"
-                      className={cn("font-medium", statusColors[client.status])}
-                    >
-                      {client.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right font-medium">{client.users}</TableCell>
-                  <TableCell className="text-right font-medium">{client.conversations}</TableCell>
-                  <TableCell className="text-right font-semibold text-foreground">
-                    {client.mrr}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">{client.createdAt}</TableCell>
-                  <TableCell className="pr-6">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-48">
-                        <DropdownMenuItem onClick={() => handleViewDetails(client.id)}>
-                          <Eye className="h-4 w-4 mr-2" />
-                          View Details
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => navigate(`/clients/${client.id}?tab=edit`)}>
-                          <Edit className="h-4 w-4 mr-2" />
-                          Edit Client
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => navigate(`/clients/${client.id}?tab=subscription`)}>
-                          <CreditCard className="h-4 w-4 mr-2" />
-                          Manage Subscription
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => navigate(`/clients/${client.id}?tab=analytics`)}>
-                          <BarChart3 className="h-4 w-4 mr-2" />
-                          View Analytics
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem 
-                          className={client.status === "Suspended" ? "text-success" : "text-destructive"}
-                          onClick={(e) => handleToggleSuspend(e, client)}
-                        >
-                          {client.status === "Suspended" ? (
-                            <>
-                              <PlayCircle className="h-4 w-4 mr-2" />
-                              Unsuspend Account
-                            </>
-                          ) : (
-                            <>
-                              <PauseCircle className="h-4 w-4 mr-2" />
-                              Suspend Account
-                            </>
-                          )}
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                filteredClients.map((client) => (
+                  <TableRow 
+                    key={client.id} 
+                    className="group cursor-pointer"
+                    onClick={() => handleViewDetails(client.id)}
+                  >
+                    <TableCell className="pl-6">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-9 w-9">
+                          <AvatarFallback className="bg-primary/5 text-primary text-xs font-medium">
+                            {client.name
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")
+                              .slice(0, 2)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-medium text-foreground">{client.name}</p>
+                          <p className="text-sm text-muted-foreground">{client.email}</p>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary" className={cn("font-medium", planColors[client.plan])}>
+                        {client.plan}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="secondary"
+                        className={cn("font-medium", statusColors[client.status])}
+                      >
+                        {client.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right font-medium">{client.users}</TableCell>
+                    <TableCell className="text-right font-medium">{client.conversations}</TableCell>
+                    <TableCell className="text-right font-semibold text-foreground">
+                      {client.mrr}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">{client.createdAt}</TableCell>
+                    <TableCell className="pr-6">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                          <DropdownMenuItem onClick={() => handleViewDetails(client.id)}>
+                            <Eye className="h-4 w-4 mr-2" />
+                            View Details
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => navigate(`/clients/${client.id}?tab=edit`)}>
+                            <Edit className="h-4 w-4 mr-2" />
+                            Edit Client
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => navigate(`/clients/${client.id}?tab=subscription`)}>
+                            <CreditCard className="h-4 w-4 mr-2" />
+                            Manage Subscription
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => navigate(`/clients/${client.id}?tab=analytics`)}>
+                            <BarChart3 className="h-4 w-4 mr-2" />
+                            View Analytics
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem 
+                            className={client.status === "Suspended" ? "text-success" : "text-destructive"}
+                            onClick={(e) => handleToggleSuspend(e, client)}
+                          >
+                            {client.status === "Suspended" ? (
+                              <>
+                                <PlayCircle className="h-4 w-4 mr-2" />
+                                Unsuspend Account
+                              </>
+                            ) : (
+                              <>
+                                <PauseCircle className="h-4 w-4 mr-2" />
+                                Suspend Account
+                              </>
+                            )}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </div>

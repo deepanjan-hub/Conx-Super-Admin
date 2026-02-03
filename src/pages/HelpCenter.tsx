@@ -456,8 +456,8 @@ const HelpCenter = () => {
             </div>
 
             {/* Tickets List */}
-            <Card className="shadow-card flex-1 flex flex-col overflow-hidden">
-              <CardHeader className="border-b">
+            <Card className="shadow-card flex-1 flex flex-col min-h-0">
+              <CardHeader className="border-b shrink-0">
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle>Support Tickets</CardTitle>
@@ -476,8 +476,8 @@ const HelpCenter = () => {
                 </div>
               </CardHeader>
 
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-                <div className="px-6 pt-4">
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
+                <div className="px-6 pt-4 shrink-0">
                   <TabsList>
                     <TabsTrigger value="all">All ({tickets.length})</TabsTrigger>
                     <TabsTrigger value="open">Open ({openCount})</TabsTrigger>
@@ -486,13 +486,13 @@ const HelpCenter = () => {
                   </TabsList>
                 </div>
 
-                <TabsContent value={activeTab} className="flex-1 overflow-hidden m-0">
+                <TabsContent value={activeTab} className="flex-1 min-h-0 m-0">
                   <ScrollArea className="h-full">
                     <div className="p-6 space-y-2">
                       {filteredTickets.length === 0 ? (
                         <div className="text-center py-12 text-muted-foreground">
                           <MessageCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                          <p>No tickets found</p>
+                          <p>{searchQuery ? "No tickets match your search" : "No tickets found"}</p>
                         </div>
                       ) : (
                         filteredTickets.map((ticket) => {
