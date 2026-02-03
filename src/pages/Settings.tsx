@@ -74,7 +74,7 @@ const Settings = () => {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="email">Email Address</Label>
-                    <Input id="email" type="email" defaultValue="admin@qubelabs.ai" />
+                    <Input id="email" type="email" defaultValue="admin@qubelabs.ai" disabled />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="role">Role</Label>
@@ -82,7 +82,7 @@ const Settings = () => {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="timezone">Timezone</Label>
-                    <Input id="timezone" defaultValue="UTC+5:30 (IST)" />
+                    <Input id="timezone" defaultValue="UTC+5:30 (IST)" disabled />
                   </div>
                 </div>
 
