@@ -13,12 +13,6 @@ import {
   HelpCircle,
   CreditCard,
   Plug,
-  Activity,
-  Phone,
-  Brain,
-  MessageCircle,
-  GitBranch,
-  BarChart2,
   RefreshCw,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
@@ -43,12 +37,6 @@ import { toast } from "sonner";
 const mainNavItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
   { title: "Clients", url: "/clients", icon: Users },
-  { title: "Live Operations", url: "/live", icon: Activity },
-  { title: "Outbound Calling", url: "/outbound", icon: Phone },
-  { title: "Sentiment Analysis", url: "/sentiment", icon: BarChart2 },
-  { title: "Flow Builder", url: "/flow-builder", icon: GitBranch },
-  { title: "Knowledge Base", url: "/knowledge", icon: Brain },
-  { title: "Widget Customizer", url: "/widget", icon: MessageCircle },
   { title: "Analytics", url: "/analytics", icon: BarChart3 },
   { title: "AI Engine Fallback", url: "/ai-fallback", icon: RefreshCw },
   { title: "Billing", url: "/billing", icon: CreditCard },
