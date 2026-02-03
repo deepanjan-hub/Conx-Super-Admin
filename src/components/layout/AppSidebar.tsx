@@ -12,7 +12,6 @@ import {
   LogOut,
   HelpCircle,
   CreditCard,
-  Plug,
   RefreshCw,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
@@ -40,7 +39,6 @@ const mainNavItems = [
   { title: "Analytics", url: "/analytics", icon: BarChart3 },
   { title: "AI Engine Fallback", url: "/ai-fallback", icon: RefreshCw },
   { title: "Billing", url: "/billing", icon: CreditCard },
-  { title: "Integrations", url: "/integrations", icon: Plug },
   { title: "Platform Config", url: "/config", icon: Sliders },
   { title: "Security", url: "/security", icon: Shield },
 ];
