@@ -15,12 +15,6 @@ import Settings from "./pages/Settings";
 import HelpCenter from "./pages/HelpCenter";
 import Billing from "./pages/Billing";
 import Integrations from "./pages/Integrations";
-import LiveOperations from "./pages/LiveOperations";
-import KnowledgeBase from "./pages/KnowledgeBase";
-import OutboundCalling from "./pages/OutboundCalling";
-import WidgetCustomizer from "./pages/WidgetCustomizer";
-import FlowBuilder from "./pages/FlowBuilder";
-import SentimentAnalysis from "./pages/SentimentAnalysis";
 import AIEngineFallback from "./pages/AIEngineFallback";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
@@ -47,12 +41,6 @@ const App = () => (
             <Route path="/help" element={<ProtectedRoute><HelpCenter /></ProtectedRoute>} />
             <Route path="/billing" element={<ProtectedRoute><Billing /></ProtectedRoute>} />
             <Route path="/integrations" element={<ProtectedRoute><Integrations /></ProtectedRoute>} />
-            <Route path="/live" element={<ProtectedRoute><LiveOperations /></ProtectedRoute>} />
-            <Route path="/knowledge" element={<ProtectedRoute><KnowledgeBase /></ProtectedRoute>} />
-            <Route path="/outbound" element={<ProtectedRoute><OutboundCalling /></ProtectedRoute>} />
-            <Route path="/widget" element={<ProtectedRoute><WidgetCustomizer /></ProtectedRoute>} />
-            <Route path="/flow-builder" element={<ProtectedRoute><FlowBuilder /></ProtectedRoute>} />
-            <Route path="/sentiment" element={<ProtectedRoute><SentimentAnalysis /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
