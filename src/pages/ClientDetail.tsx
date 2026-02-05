@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -76,9 +76,11 @@ import {
   FileText,
   TrendingUp,
   TrendingDown,
+  Loader2,
+  CheckCircle2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useClientStore } from "@/stores/clientStore";
+import { useClients, useUpdateClient, useDeleteClient } from "@/hooks/useClients";
 import { toast } from "sonner";
 
 // Mock client data
@@ -162,11 +164,15 @@ const ClientDetail = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [isSuspendDialogOpen, setIsSuspendDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isApproveDialogOpen, setIsApproveDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState("");
 
-  const storeClient = useClientStore((state) => state.getClientById(id || ""));
-  const updateClient = useClientStore((state) => state.updateClient);
-  const deleteClient = useClientStore((state) => state.deleteClient);
+  const { data: clients = [], isLoading } = useClients();
+  const updateClientMutation = useUpdateClient();
+  const deleteClientMutation = useDeleteClient();
+
+  const storeClient = clients.find((c) => c.id === id);
 
   // Merge store data with additional mock fields for display
   const client = storeClient ? {
@@ -190,29 +196,67 @@ const ClientDetail = () => {
       voiceBiometrics: false,
       multiLanguage: true,
     },
+    createdAt: new Date(storeClient.created_at).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    }),
   } : null;
 
   const handleSuspendToggle = () => {
     if (!client || !id) return;
     const newStatus = client.status === "Suspended" ? "Active" : "Suspended";
-    updateClient(id, { status: newStatus });
-    setIsSuspendDialogOpen(false);
-    toast.success(
-      newStatus === "Suspended"
-        ? `${client.name} has been suspended`
-        : `${client.name} has been reactivated`
+    updateClientMutation.mutate(
+      { id, updates: { status: newStatus } },
+      {
+        onSuccess: () => {
+          setIsSuspendDialogOpen(false);
+          toast.success(
+            newStatus === "Suspended"
+              ? `${client.name} has been suspended`
+              : `${client.name} has been reactivated`
+          );
+        },
+      }
+    );
+  };
+
+  const handleApprove = () => {
+    if (!client || !id) return;
+    updateClientMutation.mutate(
+      { id, updates: { status: "Active" } },
+      {
+        onSuccess: () => {
+          setIsApproveDialogOpen(false);
+          toast.success(`${client.name} has been approved and activated`);
+        },
+      }
     );
   };
 
   const handleDelete = () => {
     if (!id) return;
-    deleteClient(id);
-    setIsDeleteDialogOpen(false);
-    toast.success("Client deleted successfully");
-    navigate("/clients");
+    deleteClientMutation.mutate(id, {
+      onSuccess: () => {
+        setIsDeleteDialogOpen(false);
+        toast.success("Client deleted successfully");
+        navigate("/clients");
+      },
+    });
   };
 
-  if (!client) {
+  if (isLoading) {
+    return (
+      <DashboardLayout title="Loading..." subtitle="">
+        <div className="flex flex-col items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mb-4" />
+          <p className="text-muted-foreground">Loading client details...</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (!client && !isLoading) {
     return (
       <DashboardLayout title="Client Not Found" subtitle="">
         <div className="flex flex-col items-center justify-center py-12">
@@ -275,17 +319,72 @@ const ClientDetail = () => {
             </Button>
           </div>
           <div className="flex items-center gap-2">
+            {/* Approve button for Pending accounts */}
+            {client.status === "Pending" && (
+              <Dialog open={isApproveDialogOpen} onOpenChange={setIsApproveDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-2 text-success border-success/30 hover:bg-success/10">
+                    <CheckCircle2 className="h-4 w-4" />
+                    Approve
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Approve Client Account</DialogTitle>
+                    <DialogDescription>
+                      This will activate the account for {client.name}. They will be able to access the platform and start using services.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                    <div className="p-4 rounded-lg bg-success/10 border border-success/20">
+                      <div className="flex items-start gap-3">
+                        <CheckCircle className="h-5 w-5 text-success mt-0.5" />
+                        <div className="text-sm text-success">
+                          <p className="font-medium">Account Activation</p>
+                          <p>The client will receive a welcome email and can start using the platform immediately.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setIsApproveDialogOpen(false)}>
+                      Cancel
+                    </Button>
+                    <Button 
+                      className="bg-success hover:bg-success/90" 
+                      onClick={handleApprove}
+                      disabled={updateClientMutation.isPending}
+                    >
+                      {updateClientMutation.isPending ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      ) : (
+                        <CheckCircle2 className="h-4 w-4 mr-2" />
+                      )}
+                      Approve Account
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            )}
+            
+            {/* Unsuspend button for Suspended accounts */}
             {client.status === "Suspended" ? (
               <Button 
                 variant="outline" 
                 size="sm" 
                 className="gap-2 text-success border-success/30 hover:bg-success/10"
                 onClick={handleSuspendToggle}
+                disabled={updateClientMutation.isPending}
               >
-                <PlayCircle className="h-4 w-4" />
+                {updateClientMutation.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <PlayCircle className="h-4 w-4" />
+                )}
                 Reactivate
               </Button>
-            ) : (
+            ) : client.status === "Active" ? (
+              /* Suspend button for Active accounts */
               <Dialog open={isSuspendDialogOpen} onOpenChange={setIsSuspendDialogOpen}>
                 <DialogTrigger asChild>
                   <Button variant="outline" size="sm" className="gap-2 text-warning border-warning/30 hover:bg-warning/10">
@@ -310,13 +409,22 @@ const ClientDetail = () => {
                     <Button variant="outline" onClick={() => setIsSuspendDialogOpen(false)}>
                       Cancel
                     </Button>
-                    <Button variant="destructive" onClick={handleSuspendToggle}>
+                    <Button 
+                      variant="destructive" 
+                      onClick={handleSuspendToggle}
+                      disabled={updateClientMutation.isPending}
+                    >
+                      {updateClientMutation.isPending && (
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      )}
                       Suspend Account
                     </Button>
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
-            )}
+            ) : null}
+            
+            {/* Delete button - always visible */}
             <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
               <DialogTrigger asChild>
                 <Button variant="outline" size="sm" className="gap-2 text-destructive border-destructive/30 hover:bg-destructive/10">
@@ -343,14 +451,25 @@ const ClientDetail = () => {
                   </div>
                   <div className="space-y-2">
                     <Label>Type "{client.name}" to confirm</Label>
-                    <Input placeholder="Enter client name..." />
+                    <Input 
+                      placeholder="Enter client name..." 
+                      value={deleteConfirmation}
+                      onChange={(e) => setDeleteConfirmation(e.target.value)}
+                    />
                   </div>
                 </div>
                 <DialogFooter>
                   <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
                     Cancel
                   </Button>
-                  <Button variant="destructive" onClick={handleDelete}>
+                  <Button 
+                    variant="destructive" 
+                    onClick={handleDelete}
+                    disabled={deleteConfirmation !== client.name || deleteClientMutation.isPending}
+                  >
+                    {deleteClientMutation.isPending && (
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    )}
                     Delete Permanently
                   </Button>
                 </DialogFooter>
