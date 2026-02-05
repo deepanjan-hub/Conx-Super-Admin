@@ -167,6 +167,10 @@ const ClientDetail = () => {
   const [isApproveDialogOpen, setIsApproveDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
+  const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false);
+  const [emailSubject, setEmailSubject] = useState("");
+  const [emailBody, setEmailBody] = useState("");
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
 
   const { data: clients = [], isLoading } = useClients();
   const updateClientMutation = useUpdateClient();
@@ -245,6 +249,23 @@ const ClientDetail = () => {
     });
   };
 
+  const handleSendEmail = async () => {
+    if (!emailSubject.trim() || !emailBody.trim()) {
+      toast.error("Please fill in both subject and message");
+      return;
+    }
+    
+    setIsSendingEmail(true);
+    // Simulate sending email
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    toast.success(`Email sent to ${client?.email}`);
+    setIsEmailDialogOpen(false);
+    setEmailSubject("");
+    setEmailBody("");
+    setIsSendingEmail(false);
+  };
+
   if (isLoading) {
     return (
       <DashboardLayout title="Loading..." subtitle="">
@@ -309,10 +330,80 @@ const ClientDetail = () => {
         {/* Quick Actions */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="gap-2">
-              <Mail className="h-4 w-4" />
-              Send Email
-            </Button>
+            <Dialog open={isEmailDialogOpen} onOpenChange={setIsEmailDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Mail className="h-4 w-4" />
+                  Send Email
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[500px]">
+                <DialogHeader>
+                  <DialogTitle>Send Email to Client</DialogTitle>
+                  <DialogDescription>
+                    Compose and send an email to {client.name}
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email-to">To</Label>
+                    <Input 
+                      id="email-to"
+                      value={client.email}
+                      disabled
+                      className="bg-secondary/50"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email-subject">Subject</Label>
+                    <Input 
+                      id="email-subject"
+                      placeholder="Enter email subject..."
+                      value={emailSubject}
+                      onChange={(e) => setEmailSubject(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email-body">Message</Label>
+                    <Textarea 
+                      id="email-body"
+                      placeholder="Write your message here..."
+                      value={emailBody}
+                      onChange={(e) => setEmailBody(e.target.value)}
+                      rows={6}
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setIsEmailDialogOpen(false);
+                      setEmailSubject("");
+                      setEmailBody("");
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    onClick={handleSendEmail}
+                    disabled={isSendingEmail || !emailSubject.trim() || !emailBody.trim()}
+                  >
+                    {isSendingEmail ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        <Mail className="h-4 w-4 mr-2" />
+                        Send Email
+                      </>
+                    )}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
             <Button variant="outline" size="sm" className="gap-2">
               <RefreshCw className="h-4 w-4" />
               Sync Data

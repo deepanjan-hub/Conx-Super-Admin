@@ -107,11 +107,16 @@ export function AppSidebar() {
       <SidebarHeader className="p-4">
         <div className="flex items-center justify-between">
           <div className={cn("flex items-center gap-3", collapsed && "justify-center w-full")}>
-            <img 
-              src={conxLogomark} 
-              alt="CONX Logo" 
-              className="h-9 w-9 object-contain"
-            />
+            <button 
+              onClick={() => navigate("/")}
+              className="focus:outline-none hover:opacity-80 transition-opacity"
+            >
+              <img 
+                src={conxLogomark} 
+                alt="CONX Logo" 
+                className="h-9 w-9 object-contain"
+              />
+            </button>
             {!collapsed && (
               <img 
                 src={conxLogo} 
