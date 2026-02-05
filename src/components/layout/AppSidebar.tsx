@@ -116,7 +116,7 @@ export function AppSidebar() {
               <img 
                 src={conxLogo} 
                 alt="CONX" 
-                className="h-6 object-contain"
+                className="h-8 object-contain"
               />
             )}
           </div>
