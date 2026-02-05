@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { toast } from 'sonner';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { z } from 'zod';
-import conxLogo from '@/assets/conx-logo.jpg';
+import conxLogoDark from '@/assets/conx-logo-dark.jpg';
 import conxLogomark from '@/assets/conx-logomark.png';
 
 const loginSchema = z.object({
@@ -101,7 +101,7 @@ export default function Auth() {
               className="h-16 w-16 object-contain"
             />
             <img 
-              src={conxLogo} 
+              src={conxLogoDark} 
               alt="CONX" 
               className="h-8 object-contain"
             />
