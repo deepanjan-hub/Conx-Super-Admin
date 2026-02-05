@@ -8,8 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { toast } from 'sonner';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { z } from 'zod';
-import conxLogoDark from '@/assets/conx-logo-dark.jpg';
-import qubelabsLogoDark from '@/assets/qubelabs-logo-dark.png';
+import conxLogo from '@/assets/conx-logo.jpg';
+import conxLogomark from '@/assets/conx-logomark.png';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -94,15 +94,14 @@ export default function Auth() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-secondary/20 p-4">
       <Card className="w-full max-w-md shadow-xl border-border/50">
         <CardHeader className="text-center space-y-4">
-          <div className="mx-auto flex items-center justify-center gap-4">
+          <div className="mx-auto flex items-center justify-center gap-3">
             <img 
-              src={qubelabsLogoDark} 
-              alt="QubeLabs" 
-              className="h-10 object-contain"
+              src={conxLogomark} 
+              alt="CONX Logo" 
+              className="h-12 w-12 object-contain"
             />
-            <div className="h-8 w-px bg-border"></div>
             <img 
-              src={conxLogoDark} 
+              src={conxLogo} 
               alt="CONX" 
               className="h-10 object-contain"
             />
