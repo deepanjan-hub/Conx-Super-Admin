@@ -32,7 +32,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import conxLogomark from "@/assets/conx-logomark.png";
-import conxLogoDark from "@/assets/conx-logo-dark.jpg";
+import conxLogo from "@/assets/conx-logo.jpg";
 
 const mainNavItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
@@ -114,7 +114,7 @@ export function AppSidebar() {
             />
             {!collapsed && (
               <img 
-                src={conxLogoDark} 
+                src={conxLogo} 
                 alt="CONX" 
                 className="h-6 object-contain"
               />
