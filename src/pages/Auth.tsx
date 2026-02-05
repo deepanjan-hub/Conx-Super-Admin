@@ -6,8 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Bot, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { z } from 'zod';
+import conxLogo from '@/assets/conx-logo.jpg';
+import conxLogomark from '@/assets/conx-logomark.png';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -92,11 +94,20 @@ export default function Auth() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-secondary/20 p-4">
       <Card className="w-full max-w-md shadow-xl border-border/50">
         <CardHeader className="text-center space-y-4">
-          <div className="mx-auto w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center">
-            <Bot className="h-8 w-8 text-primary" />
+          <div className="mx-auto flex flex-col items-center gap-3">
+            <img 
+              src={conxLogomark} 
+              alt="CONX Logo" 
+              className="h-16 w-16 object-contain"
+            />
+            <img 
+              src={conxLogo} 
+              alt="CONX" 
+              className="h-8 object-contain"
+            />
           </div>
           <div>
-            <CardTitle className="text-2xl font-bold">VoiceAI Platform</CardTitle>
+            <CardTitle className="text-2xl font-bold">CONX Platform</CardTitle>
             <CardDescription className="text-muted-foreground">
               Super Admin Dashboard
             </CardDescription>

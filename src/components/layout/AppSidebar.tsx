@@ -8,7 +8,6 @@ import {
   Sliders,
   ChevronLeft,
   ChevronRight,
-  Zap,
   LogOut,
   HelpCircle,
   CreditCard,
@@ -32,6 +31,8 @@ import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import conxLogomark from "@/assets/conx-logomark.png";
+import conxLogoDark from "@/assets/conx-logo-dark.jpg";
 
 const mainNavItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
@@ -106,14 +107,17 @@ export function AppSidebar() {
       <SidebarHeader className="p-4">
         <div className="flex items-center justify-between">
           <div className={cn("flex items-center gap-3", collapsed && "justify-center w-full")}>
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-              <Zap className="h-5 w-5 text-primary-foreground" />
-            </div>
+            <img 
+              src={conxLogomark} 
+              alt="CONX Logo" 
+              className="h-9 w-9 object-contain"
+            />
             {!collapsed && (
-              <div className="flex flex-col">
-                <span className="text-sm font-semibold text-foreground">ConX-AI</span>
-                <span className="text-xs text-muted-foreground">{getRoleDisplay()}</span>
-              </div>
+              <img 
+                src={conxLogoDark} 
+                alt="CONX" 
+                className="h-6 object-contain"
+              />
             )}
           </div>
           {!collapsed && (
