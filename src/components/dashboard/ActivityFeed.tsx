@@ -1,4 +1,5 @@
 import { UserPlus, AlertTriangle, CreditCard, Settings, Shield } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 const activities = [
@@ -10,6 +11,7 @@ const activities = [
     icon: UserPlus,
     color: "text-success",
     bg: "bg-success/10",
+    link: null,
   },
   {
     id: 2,
@@ -19,6 +21,7 @@ const activities = [
     icon: AlertTriangle,
     color: "text-warning",
     bg: "bg-warning/10",
+    link: "/security?tab=fraud",
   },
   {
     id: 3,
@@ -28,6 +31,7 @@ const activities = [
     icon: CreditCard,
     color: "text-primary",
     bg: "bg-primary/10",
+    link: null,
   },
   {
     id: 4,
@@ -37,6 +41,7 @@ const activities = [
     icon: Settings,
     color: "text-muted-foreground",
     bg: "bg-secondary",
+    link: null,
   },
   {
     id: 5,
@@ -46,10 +51,19 @@ const activities = [
     icon: Shield,
     color: "text-success",
     bg: "bg-success/10",
+    link: "/security?tab=audit",
   },
 ];
 
 export function ActivityFeed() {
+  const navigate = useNavigate();
+
+  const handleClick = (link: string | null) => {
+    if (link) {
+      navigate(link);
+    }
+  };
+
   return (
     <div className="rounded-xl border bg-card p-6 shadow-card">
       <div className="mb-6">
@@ -63,9 +77,11 @@ export function ActivityFeed() {
             <div
               key={activity.id}
               className={cn(
-                "flex items-start gap-4 pb-4",
-                index !== activities.length - 1 && "border-b border-border"
+                "flex items-start gap-4 pb-4 rounded-lg transition-colors",
+                index !== activities.length - 1 && "border-b border-border",
+                activity.link && "cursor-pointer hover:bg-secondary/50 -mx-2 px-2 py-2"
               )}
+              onClick={() => handleClick(activity.link)}
             >
               <div className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-lg", activity.bg)}>
                 <Icon className={cn("h-4 w-4", activity.color)} />

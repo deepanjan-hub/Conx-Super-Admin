@@ -1,3 +1,5 @@
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -133,6 +135,16 @@ const complianceColors = {
 };
 
 const Security = () => {
+  const [searchParams] = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState("audit");
+
+  useEffect(() => {
+    if (tabParam && ["audit", "fraud", "compliance"].includes(tabParam)) {
+      setActiveTab(tabParam);
+    }
+  }, [tabParam]);
+
   return (
     <DashboardLayout title="Security & Compliance" subtitle="Audit logs, fraud detection, and compliance monitoring">
       <div className="space-y-6 animate-fade-in">
@@ -193,7 +205,7 @@ const Security = () => {
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="audit" className="space-y-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsList className="bg-secondary/50">
             <TabsTrigger value="audit">Audit Logs</TabsTrigger>
             <TabsTrigger value="fraud">Fraud Detection</TabsTrigger>
