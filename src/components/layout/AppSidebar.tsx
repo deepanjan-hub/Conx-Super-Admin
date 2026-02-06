@@ -12,6 +12,8 @@ import {
   HelpCircle,
   CreditCard,
   RefreshCw,
+  Plug,
+  BookOpen,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { cn } from "@/lib/utils";
@@ -42,6 +44,8 @@ const mainNavItems = [
   { title: "Billing", url: "/billing", icon: CreditCard },
   { title: "Platform Config", url: "/config", icon: Sliders },
   { title: "Security", url: "/security", icon: Shield },
+  { title: "Integration Management", url: "/integrations", icon: Plug },
+  { title: "Knowledge Hub", url: "/knowledge", icon: BookOpen },
 ];
 
 const bottomNavItems = [

@@ -15,6 +15,8 @@ import Settings from "./pages/Settings";
 import HelpCenter from "./pages/HelpCenter";
 import Billing from "./pages/Billing";
 import AIEngineFallback from "./pages/AIEngineFallback";
+import IntegrationManagement from "./pages/IntegrationManagement";
+import KnowledgeBase from "./pages/KnowledgeBase";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -39,6 +41,8 @@ const App = () => (
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path="/help" element={<ProtectedRoute><HelpCenter /></ProtectedRoute>} />
             <Route path="/billing" element={<ProtectedRoute><Billing /></ProtectedRoute>} />
+            <Route path="/integrations" element={<ProtectedRoute><IntegrationManagement /></ProtectedRoute>} />
+            <Route path="/knowledge" element={<ProtectedRoute><KnowledgeBase /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
