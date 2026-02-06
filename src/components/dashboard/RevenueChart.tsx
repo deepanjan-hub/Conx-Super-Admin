@@ -1,24 +1,26 @@
 import { useState, useMemo } from "react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { TimeRangeFilter, TimeRangeOption } from "@/components/shared/TimeRangeFilter";
+import { DateRange } from "react-day-picker";
+import { isWithinInterval, parse } from "date-fns";
 
 // Data reflecting last 12 months ending February 2026
 const allData = [
-  { month: "Mar 25", revenue: 35000, target: 40000 },
-  { month: "Apr 25", revenue: 38000, target: 42000 },
-  { month: "May 25", revenue: 42000, target: 45000 },
-  { month: "Jun 25", revenue: 45000, target: 47000 },
-  { month: "Jul 25", revenue: 48000, target: 50000 },
-  { month: "Aug 25", revenue: 52000, target: 52000 },
-  { month: "Sep 25", revenue: 58000, target: 55000 },
-  { month: "Oct 25", revenue: 62000, target: 58000 },
-  { month: "Nov 25", revenue: 71000, target: 62000 },
-  { month: "Dec 25", revenue: 78000, target: 68000 },
-  { month: "Jan 26", revenue: 85000, target: 75000 },
-  { month: "Feb 26", revenue: 92000, target: 82000 },
+  { month: "Mar 25", revenue: 35000, target: 40000, date: new Date(2025, 2, 1) },
+  { month: "Apr 25", revenue: 38000, target: 42000, date: new Date(2025, 3, 1) },
+  { month: "May 25", revenue: 42000, target: 45000, date: new Date(2025, 4, 1) },
+  { month: "Jun 25", revenue: 45000, target: 47000, date: new Date(2025, 5, 1) },
+  { month: "Jul 25", revenue: 48000, target: 50000, date: new Date(2025, 6, 1) },
+  { month: "Aug 25", revenue: 52000, target: 52000, date: new Date(2025, 7, 1) },
+  { month: "Sep 25", revenue: 58000, target: 55000, date: new Date(2025, 8, 1) },
+  { month: "Oct 25", revenue: 62000, target: 58000, date: new Date(2025, 9, 1) },
+  { month: "Nov 25", revenue: 71000, target: 62000, date: new Date(2025, 10, 1) },
+  { month: "Dec 25", revenue: 78000, target: 68000, date: new Date(2025, 11, 1) },
+  { month: "Jan 26", revenue: 85000, target: 75000, date: new Date(2026, 0, 1) },
+  { month: "Feb 26", revenue: 92000, target: 82000, date: new Date(2026, 1, 1) },
 ];
 
-const getDataForRange = (range: TimeRangeOption): typeof allData => {
+const getDataForRange = (range: TimeRangeOption, customRange?: DateRange): typeof allData => {
   switch (range) {
     case "last_month":
       return allData.slice(-1);
@@ -29,6 +31,11 @@ const getDataForRange = (range: TimeRangeOption): typeof allData => {
     case "last_year":
       return allData;
     case "custom":
+      if (customRange?.from && customRange?.to) {
+        return allData.filter(item => 
+          isWithinInterval(item.date, { start: customRange.from!, end: customRange.to! })
+        );
+      }
       return allData.slice(-6);
     default:
       return allData.slice(-6);
@@ -37,8 +44,18 @@ const getDataForRange = (range: TimeRangeOption): typeof allData => {
 
 export function RevenueChart() {
   const [timeRange, setTimeRange] = useState<TimeRangeOption>("last_6_months");
+  const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>(undefined);
 
-  const data = useMemo(() => getDataForRange(timeRange), [timeRange]);
+  const handleTimeRangeChange = (value: TimeRangeOption, dateRange?: DateRange) => {
+    setTimeRange(value);
+    if (value === "custom" && dateRange) {
+      setCustomDateRange(dateRange);
+    } else if (value !== "custom") {
+      setCustomDateRange(undefined);
+    }
+  };
+
+  const data = useMemo(() => getDataForRange(timeRange, customDateRange), [timeRange, customDateRange]);
 
   return (
     <div className="rounded-xl border bg-card p-6 shadow-card">
@@ -47,7 +64,7 @@ export function RevenueChart() {
           <h3 className="text-lg font-semibold text-foreground">Revenue Overview</h3>
           <p className="text-sm text-muted-foreground">Monthly recurring revenue vs target</p>
         </div>
-        <TimeRangeFilter value={timeRange} onChange={setTimeRange} />
+        <TimeRangeFilter value={timeRange} onChange={handleTimeRangeChange} />
       </div>
       <div className="h-[300px]">
         <ResponsiveContainer width="100%" height="100%">
