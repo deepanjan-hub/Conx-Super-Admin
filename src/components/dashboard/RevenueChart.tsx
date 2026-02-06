@@ -2,19 +2,20 @@ import { useState, useMemo } from "react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { TimeRangeFilter, TimeRangeOption } from "@/components/shared/TimeRangeFilter";
 
+// Data reflecting last 12 months ending February 2026
 const allData = [
-  { month: "Jul", revenue: 35000, target: 40000 },
-  { month: "Aug", revenue: 38000, target: 42000 },
-  { month: "Sep", revenue: 42000, target: 45000 },
-  { month: "Oct", revenue: 45000, target: 47000 },
-  { month: "Nov", revenue: 48000, target: 50000 },
-  { month: "Dec", revenue: 52000, target: 52000 },
-  { month: "Jan", revenue: 58000, target: 55000 },
-  { month: "Feb", revenue: 62000, target: 58000 },
-  { month: "Mar", revenue: 71000, target: 62000 },
-  { month: "Apr", revenue: 78000, target: 68000 },
-  { month: "May", revenue: 85000, target: 75000 },
-  { month: "Jun", revenue: 92000, target: 82000 },
+  { month: "Mar 25", revenue: 35000, target: 40000 },
+  { month: "Apr 25", revenue: 38000, target: 42000 },
+  { month: "May 25", revenue: 42000, target: 45000 },
+  { month: "Jun 25", revenue: 45000, target: 47000 },
+  { month: "Jul 25", revenue: 48000, target: 50000 },
+  { month: "Aug 25", revenue: 52000, target: 52000 },
+  { month: "Sep 25", revenue: 58000, target: 55000 },
+  { month: "Oct 25", revenue: 62000, target: 58000 },
+  { month: "Nov 25", revenue: 71000, target: 62000 },
+  { month: "Dec 25", revenue: 78000, target: 68000 },
+  { month: "Jan 26", revenue: 85000, target: 75000 },
+  { month: "Feb 26", revenue: 92000, target: 82000 },
 ];
 
 const getDataForRange = (range: TimeRangeOption): typeof allData => {
