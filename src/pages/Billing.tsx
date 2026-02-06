@@ -49,9 +49,21 @@ import {
   Wallet,
   Pencil,
   Loader2,
+  Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useBillingPlans, useAddBillingPlan, useUpdateBillingPlan } from "@/hooks/useBillingPlans";
+import { useBillingPlans, useAddBillingPlan, useUpdateBillingPlan, useDeleteBillingPlan } from "@/hooks/useBillingPlans";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const revenueData = [
   { month: "Jan", mrr: 89200, newMrr: 8400, churnedMrr: 2100 },
@@ -98,6 +110,7 @@ const Billing = () => {
   const { data: billingPlans = [], isLoading } = useBillingPlans();
   const addPlanMutation = useAddBillingPlan();
   const updatePlanMutation = useUpdateBillingPlan();
+  const deletePlanMutation = useDeleteBillingPlan();
 
   const [newPlan, setNewPlan] = useState({
     name: "",
@@ -215,6 +228,14 @@ const Billing = () => {
       },
     });
     
+    setIsEditPlanOpen(false);
+    setEditingPlanId(null);
+  };
+
+  const handleDeletePlan = async () => {
+    if (!editingPlanId) return;
+    
+    await deletePlanMutation.mutateAsync(editingPlanId);
     setIsEditPlanOpen(false);
     setEditingPlanId(null);
   };
@@ -694,23 +715,61 @@ const Billing = () => {
                   </div>
                 </div>
 
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsEditPlanOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button 
-                    onClick={handleSaveEditPlan} 
-                    disabled={!editPlan.name || !editPlan.price || updatePlanMutation.isPending}
-                  >
-                    {updatePlanMutation.isPending ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Saving...
-                      </>
-                    ) : (
-                      "Save Changes"
-                    )}
-                  </Button>
+                <DialogFooter className="flex justify-between sm:justify-between">
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button 
+                        variant="destructive" 
+                        className="gap-2"
+                        disabled={deletePlanMutation.isPending}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        Delete Plan
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Plan</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete the "{editPlan.name}" plan? This action cannot be undone and may affect clients currently subscribed to this plan.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction 
+                          onClick={handleDeletePlan}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          {deletePlanMutation.isPending ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Deleting...
+                            </>
+                          ) : (
+                            "Delete"
+                          )}
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                  <div className="flex gap-2">
+                    <Button variant="outline" onClick={() => setIsEditPlanOpen(false)}>
+                      Cancel
+                    </Button>
+                    <Button 
+                      onClick={handleSaveEditPlan} 
+                      disabled={!editPlan.name || !editPlan.price || updatePlanMutation.isPending}
+                    >
+                      {updatePlanMutation.isPending ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        "Save Changes"
+                      )}
+                    </Button>
+                  </div>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
