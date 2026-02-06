@@ -67,20 +67,18 @@ export function getDateRangeForOption(option: TimeRangeOption): DateRange {
 
 export function TimeRangeFilter({ value, onChange, className }: TimeRangeFilterProps) {
   const today = new Date();
-  const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>({
-    from: today,
-    to: undefined,
-  });
+  const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>(undefined);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
   const handleSelectChange = (newValue: TimeRangeOption) => {
     if (newValue === "custom") {
-      // Reset to today as start date when opening custom
-      setCustomDateRange({ from: today, to: undefined });
+      // Clear any previous selection and open calendar immediately
+      setCustomDateRange(undefined);
       onChange(newValue);
       setIsCalendarOpen(true);
     } else {
       onChange(newValue);
+      setIsCalendarOpen(false);
     }
   };
 
@@ -129,7 +127,7 @@ export function TimeRangeFilter({ value, onChange, className }: TimeRangeFilterP
               size="sm"
               className={cn(
                 "justify-start text-left font-normal h-9",
-                !customDateRange?.to && "text-muted-foreground"
+                !customDateRange?.from && "text-muted-foreground"
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
