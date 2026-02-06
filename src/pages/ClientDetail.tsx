@@ -1295,6 +1295,165 @@ const ClientDetail = () => {
 
           {/* Knowledge Base Tab */}
           <TabsContent value="knowledge" className="space-y-6">
+            {/* Document Upload Section */}
+            <Card className="shadow-card">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <Upload className="h-5 w-5 text-primary" />
+                      Upload Training Materials
+                    </CardTitle>
+                    <CardDescription>Upload documents for client training and knowledge base</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-6 md:grid-cols-2">
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="doc-type">Document Type</Label>
+                      <Select defaultValue="guide">
+                        <SelectTrigger id="doc-type">
+                          <SelectValue placeholder="Select document type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="guide">User Guide</SelectItem>
+                          <SelectItem value="api">API Documentation</SelectItem>
+                          <SelectItem value="tutorial">Tutorial</SelectItem>
+                          <SelectItem value="faq">FAQ</SelectItem>
+                          <SelectItem value="policy">Policy Document</SelectItem>
+                          <SelectItem value="training">Training Material</SelectItem>
+                          <SelectItem value="video">Video Resource</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="doc-title">Document Title</Label>
+                      <Input id="doc-title" placeholder="Enter document title..." />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="doc-description">Description (Optional)</Label>
+                      <Textarea id="doc-description" placeholder="Brief description of the document..." rows={3} />
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <Label>Upload File</Label>
+                    <div className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary/50 transition-colors cursor-pointer">
+                      <Upload className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
+                      <p className="text-sm font-medium text-foreground mb-1">Click to upload or drag and drop</p>
+                      <p className="text-xs text-muted-foreground">PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, MP4, or MP3 (Max 50MB)</p>
+                    </div>
+                    <Button className="w-full gap-2">
+                      <Upload className="h-4 w-4" />
+                      Upload Document
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Uploaded Documents */}
+            <Card className="shadow-card">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-primary" />
+                  Uploaded Documents
+                </CardTitle>
+                <CardDescription>Client-specific training materials and documentation</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Document</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Uploaded</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-8 w-8 items-center justify-center rounded bg-primary/10">
+                            <FileText className="h-4 w-4 text-primary" />
+                          </div>
+                          <div>
+                            <p className="font-medium">Onboarding Guide 2024</p>
+                            <p className="text-xs text-muted-foreground">PDF • 2.4 MB</p>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell><Badge variant="secondary">User Guide</Badge></TableCell>
+                      <TableCell className="text-muted-foreground">Jan 15, 2024</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Download className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-8 w-8 items-center justify-center rounded bg-success/10">
+                            <FileText className="h-4 w-4 text-success" />
+                          </div>
+                          <div>
+                            <p className="font-medium">API Integration Manual</p>
+                            <p className="text-xs text-muted-foreground">PDF • 1.8 MB</p>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell><Badge variant="secondary">API Documentation</Badge></TableCell>
+                      <TableCell className="text-muted-foreground">Feb 20, 2024</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Download className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-8 w-8 items-center justify-center rounded bg-warning/10">
+                            <Video className="h-4 w-4 text-warning" />
+                          </div>
+                          <div>
+                            <p className="font-medium">Platform Walkthrough</p>
+                            <p className="text-xs text-muted-foreground">MP4 • 48.2 MB</p>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell><Badge variant="secondary">Video Resource</Badge></TableCell>
+                      <TableCell className="text-muted-foreground">Mar 5, 2024</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Download className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+
             <Card className="shadow-card">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">

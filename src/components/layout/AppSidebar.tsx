@@ -110,7 +110,7 @@ export function AppSidebar() {
     >
       <SidebarHeader className="p-4">
         <div className="flex items-center justify-between">
-          <div className={cn("flex items-center gap-0.5", collapsed && "justify-center w-full")}>
+          <div className={cn("flex items-center gap-px", collapsed && "justify-center w-full")}>
             <button 
               onClick={() => navigate("/")}
               className="focus:outline-none hover:opacity-80 transition-opacity"

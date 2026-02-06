@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import {
   Table,
   TableBody,
@@ -96,6 +97,8 @@ const statusColors = {
 };
 
 export function ClientsTable() {
+  const navigate = useNavigate();
+
   return (
     <div className="rounded-xl border bg-card shadow-card">
       <div className="flex items-center justify-between p-6 pb-4">
@@ -103,7 +106,12 @@ export function ClientsTable() {
           <h3 className="text-lg font-semibold text-foreground">Recent Clients</h3>
           <p className="text-sm text-muted-foreground">Manage and monitor client accounts</p>
         </div>
-        <Button variant="outline" size="sm" className="gap-2">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="gap-2"
+          onClick={() => navigate("/clients")}
+        >
           View All <ExternalLink className="h-3.5 w-3.5" />
         </Button>
       </div>
