@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -36,6 +37,12 @@ import {
   CheckCircle,
   Clock,
   AlertCircle,
+  GraduationCap,
+  Video,
+  Award,
+  PlayCircle,
+  ExternalLink,
+  Users,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -123,7 +130,160 @@ const statusIcons = {
   failed: AlertCircle,
 };
 
+// Tutorial data
+const tutorials = [
+  {
+    id: "1",
+    title: "Getting Started with CONX Platform",
+    description: "Learn the basics of setting up and configuring your AI contact center",
+    duration: "15 min",
+    level: "Beginner",
+    category: "Onboarding",
+    views: 2450,
+    thumbnail: "🎬",
+  },
+  {
+    id: "2",
+    title: "Advanced Flow Builder Techniques",
+    description: "Master complex conversation flows and conditional routing",
+    duration: "32 min",
+    level: "Advanced",
+    category: "Flow Builder",
+    views: 1820,
+    thumbnail: "🔧",
+  },
+  {
+    id: "3",
+    title: "Integrating CRM Systems",
+    description: "Step-by-step guide to connecting Salesforce, HubSpot, and more",
+    duration: "22 min",
+    level: "Intermediate",
+    category: "Integrations",
+    views: 1540,
+    thumbnail: "🔗",
+  },
+  {
+    id: "4",
+    title: "Analytics Dashboard Deep Dive",
+    description: "Understand your metrics and optimize agent performance",
+    duration: "28 min",
+    level: "Intermediate",
+    category: "Analytics",
+    views: 980,
+    thumbnail: "📊",
+  },
+  {
+    id: "5",
+    title: "Security Best Practices",
+    description: "Configure RLS policies, compliance settings, and audit trails",
+    duration: "18 min",
+    level: "Advanced",
+    category: "Security",
+    views: 1120,
+    thumbnail: "🔒",
+  },
+];
+
+// Certification data
+const certifications = [
+  {
+    id: "1",
+    name: "CONX Platform Administrator",
+    description: "Demonstrate expertise in platform configuration and management",
+    modules: 8,
+    duration: "4 hours",
+    status: "available",
+    badge: "🏆",
+    enrolled: 156,
+  },
+  {
+    id: "2",
+    name: "AI Flow Builder Specialist",
+    description: "Master conversation design and flow optimization",
+    modules: 6,
+    duration: "3 hours",
+    status: "available",
+    badge: "🎯",
+    enrolled: 89,
+  },
+  {
+    id: "3",
+    name: "Integration Expert",
+    description: "Expertise in connecting third-party systems and APIs",
+    modules: 5,
+    duration: "2.5 hours",
+    status: "coming_soon",
+    badge: "🔌",
+    enrolled: 0,
+  },
+  {
+    id: "4",
+    name: "Security & Compliance Professional",
+    description: "Advanced security configuration and compliance management",
+    modules: 7,
+    duration: "3.5 hours",
+    status: "available",
+    badge: "🛡️",
+    enrolled: 67,
+  },
+];
+
+// Documentation categories
+const documentationCategories = [
+  {
+    id: "1",
+    name: "Quick Start Guide",
+    description: "Get up and running with CONX in minutes",
+    articles: 12,
+    icon: "🚀",
+    updated: "2 days ago",
+  },
+  {
+    id: "2",
+    name: "API Reference",
+    description: "Complete API documentation and endpoints",
+    articles: 45,
+    icon: "📡",
+    updated: "1 day ago",
+  },
+  {
+    id: "3",
+    name: "User Guides",
+    description: "Detailed guides for all platform features",
+    articles: 28,
+    icon: "📖",
+    updated: "3 days ago",
+  },
+  {
+    id: "4",
+    name: "Best Practices",
+    description: "Tips and recommendations for optimal setup",
+    articles: 15,
+    icon: "✨",
+    updated: "1 week ago",
+  },
+  {
+    id: "5",
+    name: "Troubleshooting",
+    description: "Common issues and solutions",
+    articles: 22,
+    icon: "🔧",
+    updated: "5 days ago",
+  },
+  {
+    id: "6",
+    name: "Release Notes",
+    description: "Latest updates and changelog",
+    articles: 18,
+    icon: "📋",
+    updated: "Today",
+  },
+];
+
 const KnowledgeBase = () => {
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get("tab") || "documentation";
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedClient, setSelectedClient] = useState<string>("all");
   const [isUploading, setIsUploading] = useState(false);
@@ -170,7 +330,7 @@ const KnowledgeBase = () => {
   const processedDocs = documents.filter((d) => d.status === "processed").length;
 
   return (
-    <DashboardLayout title="Knowledge Base" subtitle="Manage training data for AI agents">
+    <DashboardLayout title="Knowledge Hub" subtitle="Documentation, tutorials, certifications, and training materials">
       <div className="space-y-6 animate-fade-in">
         {/* Stats */}
         <div className="grid gap-4 md:grid-cols-4">
@@ -178,11 +338,11 @@ const KnowledgeBase = () => {
             <CardContent className="pt-6">
               <div className="flex items-center gap-4">
                 <div className="p-3 rounded-lg bg-primary/10">
-                  <FileText className="h-6 w-6 text-primary" />
+                  <BookOpen className="h-6 w-6 text-primary" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">{documents.length}</p>
-                  <p className="text-sm text-muted-foreground">Total Documents</p>
+                  <p className="text-2xl font-bold">{documentationCategories.reduce((sum, c) => sum + c.articles, 0)}</p>
+                  <p className="text-sm text-muted-foreground">Documentation Articles</p>
                 </div>
               </div>
             </CardContent>
@@ -191,11 +351,11 @@ const KnowledgeBase = () => {
             <CardContent className="pt-6">
               <div className="flex items-center gap-4">
                 <div className="p-3 rounded-lg bg-success/10">
-                  <CheckCircle className="h-6 w-6 text-success" />
+                  <Video className="h-6 w-6 text-success" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">{processedDocs}</p>
-                  <p className="text-sm text-muted-foreground">Processed</p>
+                  <p className="text-2xl font-bold">{tutorials.length}</p>
+                  <p className="text-sm text-muted-foreground">Video Tutorials</p>
                 </div>
               </div>
             </CardContent>
@@ -204,11 +364,11 @@ const KnowledgeBase = () => {
             <CardContent className="pt-6">
               <div className="flex items-center gap-4">
                 <div className="p-3 rounded-lg bg-secondary">
-                  <Brain className="h-6 w-6 text-foreground" />
+                  <Award className="h-6 w-6 text-foreground" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">{totalVectors.toLocaleString()}</p>
-                  <p className="text-sm text-muted-foreground">Vector Embeddings</p>
+                  <p className="text-2xl font-bold">{certifications.filter((c) => c.status === "available").length}</p>
+                  <p className="text-sm text-muted-foreground">Certifications</p>
                 </div>
               </div>
             </CardContent>
@@ -217,25 +377,197 @@ const KnowledgeBase = () => {
             <CardContent className="pt-6">
               <div className="flex items-center gap-4">
                 <div className="p-3 rounded-lg bg-warning/10">
-                  <Clock className="h-6 w-6 text-warning" />
+                  <Brain className="h-6 w-6 text-warning" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">1</p>
-                  <p className="text-sm text-muted-foreground">Processing</p>
+                  <p className="text-2xl font-bold">{totalVectors.toLocaleString()}</p>
+                  <p className="text-sm text-muted-foreground">Vector Embeddings</p>
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        <Tabs defaultValue="documents" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="documents">Documents</TabsTrigger>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="flex-wrap h-auto gap-1">
+            <TabsTrigger value="documentation">Documentation</TabsTrigger>
+            <TabsTrigger value="tutorials">Tutorials</TabsTrigger>
+            <TabsTrigger value="certifications">Certifications</TabsTrigger>
+            <TabsTrigger value="training-docs">Training Documents</TabsTrigger>
             <TabsTrigger value="upload">Upload New</TabsTrigger>
             <TabsTrigger value="training">Training Status</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="documents" className="space-y-4">
+          {/* Documentation Tab */}
+          <TabsContent value="documentation" className="space-y-4">
+            <div className="relative max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Search documentation..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {documentationCategories.map((category) => (
+                <Card key={category.id} className="hover:shadow-md transition-shadow cursor-pointer">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="text-3xl">{category.icon}</div>
+                        <div>
+                          <CardTitle className="text-lg">{category.name}</CardTitle>
+                          <p className="text-sm text-muted-foreground">{category.articles} articles</p>
+                        </div>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground mb-3">{category.description}</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">Updated {category.updated}</span>
+                      <Button variant="ghost" size="sm">
+                        View Docs
+                        <ExternalLink className="h-3.5 w-3.5 ml-1" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
+          {/* Tutorials Tab */}
+          <TabsContent value="tutorials" className="space-y-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="relative max-w-md">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="Search tutorials..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+              <Select defaultValue="all">
+                <SelectTrigger className="w-[150px]">
+                  <SelectValue placeholder="Level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Levels</SelectItem>
+                  <SelectItem value="beginner">Beginner</SelectItem>
+                  <SelectItem value="intermediate">Intermediate</SelectItem>
+                  <SelectItem value="advanced">Advanced</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {tutorials.map((tutorial) => (
+                <Card key={tutorial.id} className="hover:shadow-md transition-shadow">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="text-3xl">{tutorial.thumbnail}</div>
+                      <Badge variant="secondary">{tutorial.category}</Badge>
+                    </div>
+                    <CardTitle className="text-lg leading-tight">{tutorial.title}</CardTitle>
+                    <CardDescription>{tutorial.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center gap-4 mb-4 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        <Clock className="h-4 w-4" />
+                        {tutorial.duration}
+                      </div>
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          tutorial.level === "Beginner" && "border-success text-success",
+                          tutorial.level === "Intermediate" && "border-warning text-warning",
+                          tutorial.level === "Advanced" && "border-destructive text-destructive"
+                        )}
+                      >
+                        {tutorial.level}
+                      </Badge>
+                      <div className="flex items-center gap-1">
+                        <Users className="h-4 w-4" />
+                        {tutorial.views.toLocaleString()}
+                      </div>
+                    </div>
+                    <Button className="w-full">
+                      <PlayCircle className="h-4 w-4 mr-2" />
+                      Watch Tutorial
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
+          {/* Certifications Tab */}
+          <TabsContent value="certifications" className="space-y-4">
+            <div className="grid gap-6 md:grid-cols-2">
+              {certifications.map((cert) => (
+                <Card key={cert.id} className={cn(
+                  "relative overflow-hidden",
+                  cert.status === "coming_soon" && "opacity-70"
+                )}>
+                  {cert.status === "coming_soon" && (
+                    <div className="absolute top-4 right-4">
+                      <Badge variant="secondary">Coming Soon</Badge>
+                    </div>
+                  )}
+                  <CardHeader>
+                    <div className="flex items-start gap-4">
+                      <div className="text-4xl">{cert.badge}</div>
+                      <div className="flex-1">
+                        <CardTitle className="text-xl">{cert.name}</CardTitle>
+                        <CardDescription className="mt-1">{cert.description}</CardDescription>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center gap-6 mb-4 text-sm">
+                      <div className="flex items-center gap-2">
+                        <GraduationCap className="h-4 w-4 text-muted-foreground" />
+                        <span>{cert.modules} modules</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-muted-foreground" />
+                        <span>{cert.duration}</span>
+                      </div>
+                      {cert.enrolled > 0 && (
+                        <div className="flex items-center gap-2">
+                          <Users className="h-4 w-4 text-muted-foreground" />
+                          <span>{cert.enrolled} enrolled</span>
+                        </div>
+                      )}
+                    </div>
+                    <Button 
+                      className="w-full" 
+                      disabled={cert.status === "coming_soon"}
+                      onClick={() => toast.success(`Enrolled in ${cert.name}`)}
+                    >
+                      {cert.status === "coming_soon" ? (
+                        "Coming Soon"
+                      ) : (
+                        <>
+                          <Award className="h-4 w-4 mr-2" />
+                          Start Certification
+                        </>
+                      )}
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="training-docs" className="space-y-4">
             {/* Filters */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-3">
