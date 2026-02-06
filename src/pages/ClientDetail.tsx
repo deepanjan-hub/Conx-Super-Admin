@@ -82,10 +82,12 @@ import {
   BookOpen,
   Video,
   GraduationCap,
+  GitBranch,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useClients, useUpdateClient, useDeleteClient } from "@/hooks/useClients";
 import { toast } from "sonner";
+import { ClientFlowsTab } from "@/components/clients/ClientFlowsTab";
 
 // Mock client data
 const clientData = {
@@ -578,6 +580,10 @@ const ClientDetail = () => {
           <TabsList className="bg-secondary/50">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="edit">Edit Details</TabsTrigger>
+            <TabsTrigger value="flows" className="gap-1.5">
+              <GitBranch className="h-3.5 w-3.5" />
+              Flows
+            </TabsTrigger>
             <TabsTrigger value="subscription">Subscription</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="configuration">Configuration</TabsTrigger>
@@ -729,6 +735,11 @@ const ClientDetail = () => {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Flows Tab */}
+          <TabsContent value="flows">
+            <ClientFlowsTab clientId={id || ""} clientName={client.name} />
           </TabsContent>
 
           {/* Edit Tab */}
