@@ -66,11 +66,18 @@ export function getDateRangeForOption(option: TimeRangeOption): DateRange {
 }
 
 export function TimeRangeFilter({ value, onChange, className }: TimeRangeFilterProps) {
-  const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>();
+  const today = new Date();
+  const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>({
+    from: today,
+    to: undefined,
+  });
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
   const handleSelectChange = (newValue: TimeRangeOption) => {
     if (newValue === "custom") {
+      // Reset to today as start date when opening custom
+      setCustomDateRange({ from: today, to: undefined });
+      onChange(newValue);
       setIsCalendarOpen(true);
     } else {
       onChange(newValue);
@@ -78,10 +85,24 @@ export function TimeRangeFilter({ value, onChange, className }: TimeRangeFilterP
   };
 
   const handleDateSelect = (range: DateRange | undefined) => {
-    setCustomDateRange(range);
-    if (range?.from && range?.to) {
-      onChange("custom", range);
-      setIsCalendarOpen(false);
+    if (range) {
+      // Ensure start date is not after end date and end date is not after today
+      let validRange = { ...range };
+      
+      if (validRange.to && validRange.to > today) {
+        validRange.to = today;
+      }
+      
+      if (validRange.from && validRange.to && validRange.from > validRange.to) {
+        validRange.from = validRange.to;
+      }
+      
+      setCustomDateRange(validRange);
+      
+      if (validRange.from && validRange.to) {
+        onChange("custom", validRange);
+        setIsCalendarOpen(false);
+      }
     }
   };
 
@@ -108,7 +129,7 @@ export function TimeRangeFilter({ value, onChange, className }: TimeRangeFilterP
               size="sm"
               className={cn(
                 "justify-start text-left font-normal h-9",
-                !customDateRange && "text-muted-foreground"
+                !customDateRange?.to && "text-muted-foreground"
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
@@ -130,10 +151,11 @@ export function TimeRangeFilter({ value, onChange, className }: TimeRangeFilterP
             <Calendar
               initialFocus
               mode="range"
-              defaultMonth={customDateRange?.from}
+              defaultMonth={today}
               selected={customDateRange}
               onSelect={handleDateSelect}
               numberOfMonths={2}
+              disabled={(date) => date > today}
               className="pointer-events-auto"
             />
           </PopoverContent>
