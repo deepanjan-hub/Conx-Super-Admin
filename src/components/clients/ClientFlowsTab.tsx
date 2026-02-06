@@ -1,10 +1,11 @@
 import { useState, useCallback } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Dialog,
   DialogContent,
@@ -20,6 +21,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import {
   Table,
@@ -49,15 +51,27 @@ import {
   ZoomIn,
   ZoomOut,
   Eye,
-  Archive,
+  History,
+  RotateCcw,
+  ChevronDown,
+  MessageSquare,
+  Bot,
+  Keyboard,
+  Webhook,
+  Variable,
+  User,
+  Square,
+  Maximize2,
+  Grid3X3,
+  Upload,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { Flow, FlowNode, NodeType } from "@/components/flow-builder/types";
+import { Flow, FlowNode, FlowVersion, NodeType } from "@/components/flow-builder/types";
 import { FlowCanvas } from "@/components/flow-builder/FlowCanvas";
-import { NodePalette } from "@/components/flow-builder/NodePalette";
 import { NodePropertiesPanel } from "@/components/flow-builder/NodePropertiesPanel";
-import { FlowTestPanel } from "@/components/flow-builder/FlowTestPanel";
+import { FlowLivePreview } from "@/components/flow-builder/FlowLivePreview";
+import { format } from "date-fns";
 
 interface ClientFlowsTabProps {
   clientId: string;
@@ -77,6 +91,19 @@ const statusIcons = {
   testing: AlertCircle,
   archived: FileText,
 };
+
+const nodeTypeConfig = [
+  { type: "start" as NodeType, label: "Start", icon: Play, color: "text-success" },
+  { type: "message" as NodeType, label: "Message", icon: MessageSquare, color: "text-primary" },
+  { type: "condition" as NodeType, label: "Condition", icon: GitBranch, color: "text-warning" },
+  { type: "dtmf" as NodeType, label: "DTMF Input", icon: Keyboard, color: "text-blue-500" },
+  { type: "api" as NodeType, label: "API Call", icon: Webhook, color: "text-emerald-500" },
+  { type: "assistant" as NodeType, label: "AI Assistant", icon: Bot, color: "text-violet-500" },
+  { type: "variable" as NodeType, label: "Set Variable", icon: Variable, color: "text-pink-500" },
+  { type: "transfer" as NodeType, label: "Transfer", icon: User, color: "text-orange-500" },
+  { type: "wait" as NodeType, label: "Wait", icon: Clock, color: "text-gray-500" },
+  { type: "end" as NodeType, label: "End", icon: Square, color: "text-destructive" },
+];
 
 // Initial nodes for new flows
 const createInitialNodes = (): FlowNode[] => [
@@ -99,7 +126,7 @@ const createInitialNodes = (): FlowNode[] => [
 ];
 
 // Sample flow with nodes for demo
-const sampleFlowNodes: FlowNode[] = [
+const createSampleFlowNodes = (): FlowNode[] => [
   {
     id: "start-1",
     type: "start",
@@ -115,51 +142,62 @@ const sampleFlowNodes: FlowNode[] = [
     position: { x: 250, y: 200 },
     data: {
       message: {
-        content: "Hello! Thank you for calling. How can I help you today?",
+        content: "Hello! How can I help you today?",
         voice: "nova",
         language: "en-US",
       },
     },
-    connections: [{ id: "c2", targetNodeId: "dtmf-1" }],
-  },
-  {
-    id: "dtmf-1",
-    type: "dtmf",
-    label: "Menu Selection",
-    position: { x: 480, y: 200 },
-    data: {
-      dtmf: {
-        prompt: "Press 1 for Sales, 2 for Support, or 3 to speak with an agent.",
-        options: [
-          { key: "1", label: "Sales" },
-          { key: "2", label: "Support" },
-          { key: "3", label: "Agent" },
-        ],
-        timeout: 10,
-        retries: 3,
-      },
-    },
-    connections: [{ id: "c3", targetNodeId: "cond-1", label: "Any key" }],
+    connections: [{ id: "c2", targetNodeId: "cond-1" }],
   },
   {
     id: "cond-1",
     type: "condition",
-    label: "Route by Selection",
-    position: { x: 720, y: 200 },
+    label: "Check Intent",
+    position: { x: 480, y: 200 },
     data: {
       conditions: [
-        { id: "branch-1", label: "Sales", expression: 'dtmf === "1"' },
-        { id: "branch-2", label: "Support", expression: 'dtmf === "2"' },
-        { id: "branch-3", label: "Agent", expression: 'dtmf === "3"' },
+        { id: "branch-1", label: "Sales", expression: 'intent equals "sales"', nextNodeId: "msg-sales" },
+        { id: "branch-2", label: "Support", expression: 'intent equals "support"', nextNodeId: "msg-support" },
       ],
     },
-    connections: [{ id: "c4", targetNodeId: "end-1", label: "Default" }],
+    connections: [
+      { id: "c3", targetNodeId: "msg-sales", label: "Y" },
+      { id: "c4", targetNodeId: "msg-support", label: "N" },
+    ],
+  },
+  {
+    id: "msg-sales",
+    type: "message",
+    label: "Sales Response",
+    position: { x: 750, y: 100 },
+    data: {
+      message: {
+        content: "Let me connect you with our sales team...",
+        voice: "nova",
+        language: "en-US",
+      },
+    },
+    connections: [{ id: "c5", targetNodeId: "end-1" }],
+  },
+  {
+    id: "msg-support",
+    type: "message",
+    label: "Support Response",
+    position: { x: 750, y: 320 },
+    data: {
+      message: {
+        content: "I'll help you with support. What seems to be the issue?",
+        voice: "nova",
+        language: "en-US",
+      },
+    },
+    connections: [{ id: "c6", targetNodeId: "end-1" }],
   },
   {
     id: "end-1",
     type: "end",
     label: "End Call",
-    position: { x: 980, y: 200 },
+    position: { x: 1000, y: 200 },
     data: {},
     connections: [],
   },
@@ -171,14 +209,15 @@ export function ClientFlowsTab({ clientId, clientName }: ClientFlowsTabProps) {
     {
       id: `${clientId}-flow-1`,
       name: "Customer Support Flow",
-      description: "Handle incoming customer support requests with AI triage",
-      status: "published",
-      currentVersion: "v2.3",
+      description: "Main customer support conversation flow",
+      status: "draft",
+      currentVersion: "v2.1",
       versions: [
-        { id: "v1", version: "v2.3", createdAt: new Date().toISOString(), createdBy: "Admin", nodeCount: 5, notes: "Added escalation logic" },
-        { id: "v2", version: "v2.2", createdAt: new Date(Date.now() - 86400000).toISOString(), createdBy: "Admin", nodeCount: 4 },
+        { id: "v3", version: "v2.1", createdAt: "2024-05-01", createdBy: "John Anderson", nodeCount: 6, notes: "Added API call node for user lookup" },
+        { id: "v2", version: "v2.0", createdAt: "2024-04-15", createdBy: "Sarah Mitchell", nodeCount: 5, notes: "Added conditional branching for sales vs support" },
+        { id: "v1", version: "v1.0", createdAt: "2024-04-01", createdBy: "John Anderson", nodeCount: 3, notes: "Initial flow creation" },
       ],
-      nodes: sampleFlowNodes,
+      nodes: createSampleFlowNodes(),
       createdAt: new Date(Date.now() - 604800000).toISOString(),
       updatedAt: new Date().toISOString(),
       clientId,
@@ -189,7 +228,7 @@ export function ClientFlowsTab({ clientId, clientName }: ClientFlowsTabProps) {
       id: `${clientId}-flow-2`,
       name: "Sales Inquiry Handler",
       description: "Qualify leads and route to appropriate sales team",
-      status: "draft",
+      status: "published",
       currentVersion: "v1.0",
       versions: [
         { id: "v1", version: "v1.0", createdAt: new Date().toISOString(), createdBy: "Admin", nodeCount: 2 },
@@ -226,8 +265,9 @@ export function ClientFlowsTab({ clientId, clientName }: ClientFlowsTabProps) {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [zoom, setZoom] = useState(100);
   const [isDirty, setIsDirty] = useState(false);
-  const [showTestPanel, setShowTestPanel] = useState(false);
+  const [showLivePreview, setShowLivePreview] = useState(true);
   const [showNewFlowDialog, setShowNewFlowDialog] = useState(false);
+  const [showVersionsDialog, setShowVersionsDialog] = useState(false);
   const [newFlowName, setNewFlowName] = useState("");
   const [newFlowDescription, setNewFlowDescription] = useState("");
   const [history, setHistory] = useState<FlowNode[][]>([]);
@@ -258,7 +298,7 @@ export function ClientFlowsTab({ clientId, clientName }: ClientFlowsTabProps) {
     setSelectedFlow(null);
     setNodes([]);
     setSelectedNodeId(null);
-    setShowTestPanel(false);
+    setShowLivePreview(true);
   };
 
   const handleNodesChange = useCallback((newNodes: FlowNode[]) => {
@@ -371,14 +411,15 @@ export function ClientFlowsTab({ clientId, clientName }: ClientFlowsTabProps) {
   const handlePublishFlow = () => {
     if (!selectedFlow) return;
     
-    const newVersion = `v${parseFloat(selectedFlow.currentVersion.replace('v', '')) + 0.1}`;
+    const versionNumber = parseFloat(selectedFlow.currentVersion.replace('v', ''));
+    const newVersion = `v${(Math.floor(versionNumber) + 1)}.0`;
     const updatedFlow: Flow = {
       ...selectedFlow,
       nodes,
       status: "published",
       currentVersion: newVersion,
       versions: [
-        { id: `v-${Date.now()}`, version: newVersion, createdAt: new Date().toISOString(), createdBy: "Admin", nodeCount: nodes.length, notes: "Published" },
+        { id: `v-${Date.now()}`, version: newVersion, createdAt: new Date().toISOString(), createdBy: "Admin", nodeCount: nodes.length, notes: "Published version" },
         ...selectedFlow.versions,
       ],
       updatedAt: new Date().toISOString(),
@@ -388,6 +429,13 @@ export function ClientFlowsTab({ clientId, clientName }: ClientFlowsTabProps) {
     setSelectedFlow(updatedFlow);
     setIsDirty(false);
     toast.success("Flow published successfully!");
+  };
+
+  const handleRollback = (version: FlowVersion) => {
+    if (!selectedFlow) return;
+    
+    toast.success(`Rolled back to ${version.version}. Current changes saved as draft.`);
+    setShowVersionsDialog(false);
   };
 
   const handleCreateFlow = () => {
@@ -446,64 +494,170 @@ export function ClientFlowsTab({ clientId, clientName }: ClientFlowsTabProps) {
 
   // Editor Mode
   if (isEditorMode && selectedFlow) {
+    const StatusIcon = statusIcons[selectedFlow.status];
+    
     return (
-      <div className="space-y-4">
+      <div className="space-y-0 -mx-6 -mt-6">
         {/* Editor Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={handleCloseEditor}>
+        <div className="flex items-center justify-between px-6 py-4 bg-card border-b">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" onClick={handleCloseEditor} className="shrink-0">
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div>
-              <h3 className="text-lg font-semibold flex items-center gap-2">
-                {selectedFlow.name}
-                {isDirty && <span className="text-warning text-sm">•</span>}
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                {selectedFlow.currentVersion} • {nodes.length} nodes
-              </p>
+              <div className="flex items-center gap-3">
+                <h2 className="text-xl font-bold">{selectedFlow.name}</h2>
+                <Badge variant="outline" className={cn("gap-1", statusStyles[selectedFlow.status])}>
+                  {selectedFlow.status}
+                </Badge>
+                <Badge variant="secondary">{selectedFlow.currentVersion}</Badge>
+                {isDirty && <span className="text-warning text-lg">•</span>}
+              </div>
+              <p className="text-sm text-muted-foreground">{selectedFlow.description}</p>
             </div>
           </div>
+          
+          {/* Action Buttons */}
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={handleUndo} disabled={historyIndex <= 0}>
-              <Undo className="h-4 w-4" />
+            {/* Add Node Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="gap-2">
+                  <Plus className="h-4 w-4" />
+                  Add Node
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>Flow Control</DropdownMenuLabel>
+                {nodeTypeConfig.filter(n => ["start", "end", "condition", "wait"].includes(n.type)).map((node) => (
+                  <DropdownMenuItem key={node.type} onClick={() => handleAddNode(node.type)} className="gap-2">
+                    <node.icon className={cn("h-4 w-4", node.color)} />
+                    {node.label}
+                  </DropdownMenuItem>
+                ))}
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel>Communication</DropdownMenuLabel>
+                {nodeTypeConfig.filter(n => ["message", "assistant", "dtmf", "transfer"].includes(n.type)).map((node) => (
+                  <DropdownMenuItem key={node.type} onClick={() => handleAddNode(node.type)} className="gap-2">
+                    <node.icon className={cn("h-4 w-4", node.color)} />
+                    {node.label}
+                  </DropdownMenuItem>
+                ))}
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel>Data & Integration</DropdownMenuLabel>
+                {nodeTypeConfig.filter(n => ["api", "variable"].includes(n.type)).map((node) => (
+                  <DropdownMenuItem key={node.type} onClick={() => handleAddNode(node.type)} className="gap-2">
+                    <node.icon className={cn("h-4 w-4", node.color)} />
+                    {node.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Preview Toggle */}
+            <Button 
+              variant={showLivePreview ? "default" : "outline"} 
+              className="gap-2"
+              onClick={() => setShowLivePreview(!showLivePreview)}
+            >
+              <Eye className="h-4 w-4" />
+              Preview
             </Button>
-            <Button variant="outline" size="sm" onClick={handleRedo} disabled={historyIndex >= history.length - 1}>
-              <Redo className="h-4 w-4" />
-            </Button>
-            <div className="flex items-center gap-1 border rounded-md px-2">
-              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setZoom(Math.max(50, zoom - 10))}>
-                <ZoomOut className="h-4 w-4" />
-              </Button>
-              <span className="text-sm w-12 text-center">{zoom}%</span>
-              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setZoom(Math.min(150, zoom + 10))}>
-                <ZoomIn className="h-4 w-4" />
-              </Button>
-            </div>
-            <Button variant="outline" size="sm" onClick={() => setShowTestPanel(!showTestPanel)} className="gap-2">
-              <Play className="h-4 w-4" />
-              Test
-            </Button>
-            <Button variant="outline" size="sm" onClick={handleSaveFlow} disabled={!isDirty} className="gap-2">
+
+            {/* Versions Dialog */}
+            <Dialog open={showVersionsDialog} onOpenChange={setShowVersionsDialog}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="gap-2">
+                  <History className="h-4 w-4" />
+                  Versions
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-lg">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <RotateCcw className="h-5 w-5" />
+                    Rollback to Previous Version
+                  </DialogTitle>
+                  <DialogDescription>
+                    Select a previous version to restore. Current changes will be saved as draft.
+                  </DialogDescription>
+                </DialogHeader>
+                <ScrollArea className="max-h-[400px] pr-4">
+                  <div className="space-y-3">
+                    {selectedFlow.versions.map((version, index) => {
+                      const isCurrentVersion = version.version === selectedFlow.currentVersion;
+                      const isPublished = index === 0 && selectedFlow.status === "published";
+                      
+                      return (
+                        <div
+                          key={version.id}
+                          className={cn(
+                            "p-4 rounded-lg border transition-colors",
+                            isCurrentVersion ? "border-primary bg-primary/5" : "hover:bg-muted/50"
+                          )}
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2">
+                                <span className="font-semibold text-lg">{version.version}</span>
+                                {isCurrentVersion && (
+                                  <Badge variant="secondary" className="text-xs">Current</Badge>
+                                )}
+                                {isPublished && (
+                                  <Badge className="bg-success/10 text-success text-xs border-0">published</Badge>
+                                )}
+                                {!isCurrentVersion && !isPublished && selectedFlow.status === "draft" && index === 0 && (
+                                  <Badge variant="secondary" className="text-xs">draft</Badge>
+                                )}
+                              </div>
+                              <p className="text-sm text-muted-foreground">{version.notes}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {version.createdBy} • {version.createdAt.includes("T") 
+                                  ? format(new Date(version.createdAt), "yyyy-MM-dd")
+                                  : version.createdAt}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </ScrollArea>
+                <DialogFooter className="gap-2">
+                  <Button variant="outline" onClick={() => setShowVersionsDialog(false)}>
+                    Cancel
+                  </Button>
+                  <Button 
+                    onClick={() => handleRollback(selectedFlow.versions[1])}
+                    disabled={selectedFlow.versions.length <= 1}
+                    className="gap-2"
+                  >
+                    <RotateCcw className="h-4 w-4" />
+                    Rollback to v...
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+            {/* Save Button */}
+            <Button variant="outline" onClick={handleSaveFlow} disabled={!isDirty} className="gap-2">
               <Save className="h-4 w-4" />
               Save
             </Button>
-            <Button size="sm" onClick={handlePublishFlow} className="gap-2">
-              <CheckCircle className="h-4 w-4" />
+
+            {/* Publish Button */}
+            <Button onClick={handlePublishFlow} className="gap-2 bg-primary">
+              <Upload className="h-4 w-4" />
               Publish
             </Button>
           </div>
         </div>
 
         {/* Editor Content */}
-        <div className="flex gap-4 h-[calc(100vh-320px)] min-h-[500px]">
-          {/* Node Palette */}
-          <div className="w-48 shrink-0">
-            <NodePalette onAddNode={handleAddNode} />
-          </div>
-
-        {/* Canvas */}
-          <div className="flex-1 border rounded-lg overflow-hidden">
+        <div className="flex h-[calc(100vh-200px)] min-h-[600px]">
+          {/* Canvas */}
+          <div className="flex-1 relative">
             <FlowCanvas
               nodes={nodes}
               onNodesChange={handleNodesChange}
@@ -512,23 +666,48 @@ export function ClientFlowsTab({ clientId, clientName }: ClientFlowsTabProps) {
               zoom={zoom}
               onConnect={handleConnect}
             />
+            
+            {/* Canvas Controls - Bottom Left */}
+            <div className="absolute bottom-4 left-4 flex items-center gap-2 bg-card/90 backdrop-blur-sm rounded-lg border p-1 shadow-lg">
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setZoom(Math.max(50, zoom - 10))}>
+                <ZoomOut className="h-4 w-4" />
+              </Button>
+              <span className="text-sm w-12 text-center font-medium">{zoom}%</span>
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setZoom(Math.min(150, zoom + 10))}>
+                <ZoomIn className="h-4 w-4" />
+              </Button>
+              <div className="w-px h-6 bg-border" />
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setZoom(100)}>
+                <Maximize2 className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Grid3X3 className="h-4 w-4" />
+              </Button>
+            </div>
+
+            {/* Canvas Hint */}
+            <div className="absolute bottom-4 right-4 text-xs text-muted-foreground bg-card/80 backdrop-blur-sm px-2 py-1 rounded">
+              Alt + Drag or Middle-click to pan • Ctrl + Scroll to zoom
+            </div>
           </div>
 
           {/* Properties Panel */}
-          <NodePropertiesPanel
-            node={selectedNode}
-            onUpdateNode={handleUpdateNode}
-            onDeleteNode={handleDeleteNode}
-            onDuplicateNode={handleDuplicateNode}
-          />
+          {selectedNode && (
+            <NodePropertiesPanel
+              node={selectedNode}
+              onUpdateNode={handleUpdateNode}
+              onDeleteNode={handleDeleteNode}
+              onDuplicateNode={handleDuplicateNode}
+            />
+          )}
 
-          {/* Test Panel */}
-          <FlowTestPanel
-            nodes={nodes}
-            isOpen={showTestPanel}
-            onClose={() => setShowTestPanel(false)}
-            onHighlightNode={() => {}}
-          />
+          {/* Live Preview Panel */}
+          {showLivePreview && (
+            <FlowLivePreview
+              nodes={nodes}
+              onClose={() => setShowLivePreview(false)}
+            />
+          )}
         </div>
       </div>
     );
