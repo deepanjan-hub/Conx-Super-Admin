@@ -20,7 +20,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Search, Plus, MoreHorizontal, Filter, Download, Eye, Edit, CreditCard, BarChart3, PauseCircle, PlayCircle, Loader2 } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Search, Plus, MoreHorizontal, Filter, Download, Eye, Edit, CreditCard, BarChart3, PauseCircle, PlayCircle, Loader2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AddClientDialog } from "@/components/clients/AddClientDialog";
 import { ExportDialog } from "@/components/shared/ExportDialog";
@@ -39,6 +45,9 @@ const statusColors: Record<string, string> = {
   Pending: "bg-warning/10 text-warning",
 };
 
+const planOptions = ["Starter", "Professional", "Enterprise"];
+const statusOptions = ["Active", "Suspended", "Pending"];
+
 const exportColumns = ["Name", "Email", "Plan", "Status", "Users", "Conversations", "MRR", "Created"];
 
 const Clients = () => {
@@ -46,6 +55,9 @@ const Clients = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
+  const [selectedPlans, setSelectedPlans] = useState<string[]>([]);
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   
   const { data: clients = [], isLoading } = useClients();
   const updateClientMutation = useUpdateClient();
@@ -67,11 +79,35 @@ const Clients = () => {
     );
   };
 
-  const filteredClients = clients.filter(
-    (client) =>
+  const togglePlanFilter = (plan: string) => {
+    setSelectedPlans(prev => 
+      prev.includes(plan) ? prev.filter(p => p !== plan) : [...prev, plan]
+    );
+  };
+
+  const toggleStatusFilter = (status: string) => {
+    setSelectedStatuses(prev => 
+      prev.includes(status) ? prev.filter(s => s !== status) : [...prev, status]
+    );
+  };
+
+  const clearFilters = () => {
+    setSelectedPlans([]);
+    setSelectedStatuses([]);
+  };
+
+  const activeFilterCount = selectedPlans.length + selectedStatuses.length;
+
+  const filteredClients = clients.filter((client) => {
+    const matchesSearch = 
       client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      client.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+      client.email.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesPlan = selectedPlans.length === 0 || selectedPlans.includes(client.plan);
+    const matchesStatus = selectedStatuses.length === 0 || selectedStatuses.includes(client.status);
+    
+    return matchesSearch && matchesPlan && matchesStatus;
+  });
 
   const handleViewDetails = (clientId: string) => {
     navigate(`/clients/${clientId}`);
@@ -101,9 +137,76 @@ const Clients = () => {
                 className="w-[300px] pl-9 bg-secondary/50 border-0 focus-visible:ring-1"
               />
             </div>
-            <Button variant="outline" size="icon">
-              <Filter className="h-4 w-4" />
-            </Button>
+            <Popover open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="icon" className="relative">
+                  <Filter className="h-4 w-4" />
+                  {activeFilterCount > 0 && (
+                    <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-[10px] font-medium text-primary-foreground flex items-center justify-center">
+                      {activeFilterCount}
+                    </span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-64 p-4" align="start">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-medium text-sm">Filters</h4>
+                    {activeFilterCount > 0 && (
+                      <Button variant="ghost" size="sm" onClick={clearFilters} className="h-auto p-1 text-xs text-muted-foreground hover:text-foreground">
+                        Clear all
+                      </Button>
+                    )}
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Plan</p>
+                    {planOptions.map((plan) => (
+                      <label key={plan} className="flex items-center gap-2 cursor-pointer">
+                        <Checkbox
+                          checked={selectedPlans.includes(plan)}
+                          onCheckedChange={() => togglePlanFilter(plan)}
+                        />
+                        <span className="text-sm">{plan}</span>
+                      </label>
+                    ))}
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Status</p>
+                    {statusOptions.map((status) => (
+                      <label key={status} className="flex items-center gap-2 cursor-pointer">
+                        <Checkbox
+                          checked={selectedStatuses.includes(status)}
+                          onCheckedChange={() => toggleStatusFilter(status)}
+                        />
+                        <span className="text-sm">{status}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
+            {activeFilterCount > 0 && (
+              <div className="flex items-center gap-2">
+                {selectedPlans.map((plan) => (
+                  <Badge key={plan} variant="secondary" className="gap-1 pr-1">
+                    {plan}
+                    <button onClick={() => togglePlanFilter(plan)} className="ml-1 rounded-full hover:bg-muted p-0.5">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
+                {selectedStatuses.map((status) => (
+                  <Badge key={status} variant="secondary" className="gap-1 pr-1">
+                    {status}
+                    <button onClick={() => toggleStatusFilter(status)} className="ml-1 rounded-full hover:bg-muted p-0.5">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            )}
           </div>
           <div className="flex items-center gap-3">
             <Button variant="outline" className="gap-2" onClick={() => setIsExportDialogOpen(true)}>
