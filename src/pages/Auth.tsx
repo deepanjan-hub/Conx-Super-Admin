@@ -94,7 +94,7 @@ export default function Auth() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-secondary/20 p-4">
       <Card className="w-full max-w-md shadow-xl border-border/50">
         <CardHeader className="text-center space-y-4">
-          <div className="mx-auto flex items-center justify-center gap-3">
+          <div className="mx-auto flex items-center justify-center gap-0.5">
             <img 
               src={conxLogomark} 
               alt="CONX Logo" 

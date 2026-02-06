@@ -78,6 +78,10 @@ import {
   TrendingDown,
   Loader2,
   CheckCircle2,
+  Brain,
+  BookOpen,
+  Video,
+  GraduationCap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useClients, useUpdateClient, useDeleteClient } from "@/hooks/useClients";
@@ -577,6 +581,7 @@ const ClientDetail = () => {
             <TabsTrigger value="subscription">Subscription</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="configuration">Configuration</TabsTrigger>
+            <TabsTrigger value="knowledge">Knowledge Base</TabsTrigger>
             <TabsTrigger value="activity">Activity Log</TabsTrigger>
           </TabsList>
 
@@ -1197,12 +1202,241 @@ const ClientDetail = () => {
               </CardContent>
             </Card>
 
+            {/* LLM Configuration */}
+            <Card className="shadow-card">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Brain className="h-5 w-5 text-primary" />
+                  LLM Configuration
+                </CardTitle>
+                <CardDescription>Configure AI model settings for this client</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label>Primary LLM Model</Label>
+                    <Select defaultValue="gpt-4">
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="gpt-4">GPT-4</SelectItem>
+                        <SelectItem value="gpt-4-turbo">GPT-4 Turbo</SelectItem>
+                        <SelectItem value="gpt-3.5-turbo">GPT-3.5 Turbo</SelectItem>
+                        <SelectItem value="claude-3-opus">Claude 3 Opus</SelectItem>
+                        <SelectItem value="claude-3-sonnet">Claude 3 Sonnet</SelectItem>
+                        <SelectItem value="gemini-pro">Gemini Pro</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Fallback Model</Label>
+                    <Select defaultValue="gpt-3.5-turbo">
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="gpt-3.5-turbo">GPT-3.5 Turbo</SelectItem>
+                        <SelectItem value="claude-3-haiku">Claude 3 Haiku</SelectItem>
+                        <SelectItem value="gemini-flash">Gemini Flash</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <Separator />
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">Temperature</p>
+                      <p className="text-sm text-muted-foreground">Controls randomness (0 = deterministic, 1 = creative)</p>
+                    </div>
+                    <Input type="number" defaultValue="0.7" min="0" max="1" step="0.1" className="w-24" />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">Max Tokens</p>
+                      <p className="text-sm text-muted-foreground">Maximum response length</p>
+                    </div>
+                    <Input type="number" defaultValue="2048" min="256" max="8192" step="256" className="w-24" />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">Context Window</p>
+                      <p className="text-sm text-muted-foreground">Number of previous messages to include</p>
+                    </div>
+                    <Input type="number" defaultValue="10" min="1" max="50" className="w-24" />
+                  </div>
+                </div>
+                <Separator />
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">Enable Streaming</p>
+                    <p className="text-sm text-muted-foreground">Stream responses in real-time</p>
+                  </div>
+                  <Switch defaultChecked />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">Use Custom System Prompt</p>
+                    <p className="text-sm text-muted-foreground">Allow client to customize AI behavior</p>
+                  </div>
+                  <Switch defaultChecked />
+                </div>
+              </CardContent>
+            </Card>
+
             <div className="flex justify-end">
               <Button className="gap-2">
                 <Save className="h-4 w-4" />
                 Save Configuration
               </Button>
             </div>
+          </TabsContent>
+
+          {/* Knowledge Base Tab */}
+          <TabsContent value="knowledge" className="space-y-6">
+            <Card className="shadow-card">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BookOpen className="h-5 w-5 text-primary" />
+                  Documentation & Guides
+                </CardTitle>
+                <CardDescription>Access training materials and platform documentation</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="p-4 rounded-lg border bg-card hover:bg-secondary/30 transition-colors cursor-pointer">
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                        <FileText className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <h4 className="font-medium">Getting Started Guide</h4>
+                        <p className="text-sm text-muted-foreground mt-1">Complete onboarding documentation for new users</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-4 rounded-lg border bg-card hover:bg-secondary/30 transition-colors cursor-pointer">
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-success/10">
+                        <Settings className="h-5 w-5 text-success" />
+                      </div>
+                      <div>
+                        <h4 className="font-medium">API Reference</h4>
+                        <p className="text-sm text-muted-foreground mt-1">Technical documentation for integrations</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-4 rounded-lg border bg-card hover:bg-secondary/30 transition-colors cursor-pointer">
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-warning/10">
+                        <MessageSquare className="h-5 w-5 text-warning" />
+                      </div>
+                      <div>
+                        <h4 className="font-medium">Agent Configuration</h4>
+                        <p className="text-sm text-muted-foreground mt-1">How to set up and customize AI agents</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-4 rounded-lg border bg-card hover:bg-secondary/30 transition-colors cursor-pointer">
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-destructive/10">
+                        <AlertTriangle className="h-5 w-5 text-destructive" />
+                      </div>
+                      <div>
+                        <h4 className="font-medium">Troubleshooting</h4>
+                        <p className="text-sm text-muted-foreground mt-1">Common issues and solutions</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-card">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Video className="h-5 w-5 text-primary" />
+                  Video Tutorials
+                </CardTitle>
+                <CardDescription>Step-by-step video guides for platform features</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 md:grid-cols-3">
+                  <div className="group cursor-pointer">
+                    <div className="aspect-video rounded-lg bg-secondary/50 flex items-center justify-center mb-2 group-hover:bg-secondary transition-colors">
+                      <PlayCircle className="h-10 w-10 text-primary/50 group-hover:text-primary transition-colors" />
+                    </div>
+                    <h4 className="font-medium text-sm">Platform Overview</h4>
+                    <p className="text-xs text-muted-foreground">12 min</p>
+                  </div>
+                  <div className="group cursor-pointer">
+                    <div className="aspect-video rounded-lg bg-secondary/50 flex items-center justify-center mb-2 group-hover:bg-secondary transition-colors">
+                      <PlayCircle className="h-10 w-10 text-primary/50 group-hover:text-primary transition-colors" />
+                    </div>
+                    <h4 className="font-medium text-sm">Creating AI Agents</h4>
+                    <p className="text-xs text-muted-foreground">18 min</p>
+                  </div>
+                  <div className="group cursor-pointer">
+                    <div className="aspect-video rounded-lg bg-secondary/50 flex items-center justify-center mb-2 group-hover:bg-secondary transition-colors">
+                      <PlayCircle className="h-10 w-10 text-primary/50 group-hover:text-primary transition-colors" />
+                    </div>
+                    <h4 className="font-medium text-sm">Analytics Dashboard</h4>
+                    <p className="text-xs text-muted-foreground">8 min</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-card">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <GraduationCap className="h-5 w-5 text-primary" />
+                  Certification Modules
+                </CardTitle>
+                <CardDescription>Complete training to earn certifications</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 rounded-lg border bg-card">
+                    <div className="flex items-center gap-4">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-success/10">
+                        <CheckCircle className="h-5 w-5 text-success" />
+                      </div>
+                      <div>
+                        <p className="font-medium">Platform Fundamentals</p>
+                        <p className="text-sm text-muted-foreground">Core concepts and navigation</p>
+                      </div>
+                    </div>
+                    <Badge className="bg-success/10 text-success">Completed</Badge>
+                  </div>
+                  <div className="flex items-center justify-between p-4 rounded-lg border bg-card">
+                    <div className="flex items-center gap-4">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-warning/10">
+                        <RefreshCw className="h-5 w-5 text-warning" />
+                      </div>
+                      <div>
+                        <p className="font-medium">Advanced Agent Configuration</p>
+                        <p className="text-sm text-muted-foreground">Custom workflows and integrations</p>
+                      </div>
+                    </div>
+                    <Badge className="bg-warning/10 text-warning">In Progress</Badge>
+                  </div>
+                  <div className="flex items-center justify-between p-4 rounded-lg border bg-card">
+                    <div className="flex items-center gap-4">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary">
+                        <GraduationCap className="h-5 w-5 text-muted-foreground" />
+                      </div>
+                      <div>
+                        <p className="font-medium">Analytics & Reporting</p>
+                        <p className="text-sm text-muted-foreground">Data insights and optimization</p>
+                      </div>
+                    </div>
+                    <Button variant="outline" size="sm">Start</Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Activity Log Tab */}
